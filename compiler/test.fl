@@ -1,20 +1,20 @@
 result = last(concat(list))
 
-concat(l1) =
-    if pair?(l1)
-        then append(car(l1), concat(cdr(l1)))
+concat(l) =
+    if pair?(l)
+        then append(car(l), concat(cdr(l)))
         else 'nil
 
-append(l2, l3) =
-    if pair?(l2)
-        then cons(car(l2), append(cdr(l2), l3))
-        else l3
+append(l1, l2) =
+    if pair?(l1)
+        then cons(car(l1), append(cdr(l1), l2))
+        else l2
 
-last(l4) =
-    if pair?(l4)
-        then if pair?(cdr(l4))
-            then last(cdr(l4))
-            else car(l4)
+last(l) =
+    if pair?(l)
+        then if pair?(cdr(l))
+            then last(cdr(l))
+            else car(l)
         else 'nil
 
 list = cons(list1, cons(list2, 'nil))
