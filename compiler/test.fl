@@ -1,0 +1,22 @@
+result = last(concat(list))
+
+concat(l1) =
+    if pair?(l1)
+        then append(car(l1), concat(cdr(l1)))
+        else 'nil
+
+append(l2, l3) =
+    if pair?(l2)
+        then cons(car(l2), append(cdr(l2), l3))
+        else l3
+
+last(l4) =
+    if pair?(l4)
+        then if pair?(cdr(l4))
+            then last(cdr(l4))
+            else car(l4)
+        else 'nil
+
+list = cons(list1, cons(list2, 'nil))
+list1 = cons(1, cons(2, 'nil))
+list2 = cons(3, cons(4, 'nil))

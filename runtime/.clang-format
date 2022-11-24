@@ -1,0 +1,14 @@
+BasedOnStyle: LLVM
+
+ColumnLimit: 120
+
+# Indentation
+IndentWidth: 8
+TabWidth: 8
+UseTab: Always
+
+PointerAlignment: Left
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true
