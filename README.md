@@ -49,7 +49,9 @@ TODO
 
 ### Step 3: Compiling a program
 
-TODO
+```bash
+ic prog.fl
+```
 
 ### Step 4: Running the program
 

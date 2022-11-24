@@ -8,13 +8,13 @@ pub mod loc;
 pub mod parser;
 pub mod token;
 
-/*
-result = f(10) + f(10)
-f(x) = x + x
-*/
-
 fn main() {
-    let source = read_to_string("test.fl").unwrap();
+    let args = std::env::args().collect::<Vec<String>>();
+    if args.len() != 2 {
+        panic!("Usage: ic <source file>");
+    }
+
+    let source = read_to_string(&args[1]).unwrap();
     let lexer = lexer::Lexer::new(&source);
     let mut parser = parser::Parser::new(lexer);
     let fp = parser.parse().unwrap();
