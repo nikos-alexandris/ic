@@ -25,3 +25,32 @@ The process of compilation is:
 - [X] Values
 - [ ] Garbage Collection
 - [ ] LAR
+
+## Dependencies
+
+- The Rust toolchain (https://www.rust-lang.org/tools/install)
+
+- GCC (https://gcc.gnu.org/install/)
+
+## Running a program
+
+### Step 1: Building the compiler
+
+```bash
+cd compiler
+cargo build --release
+```
+
+Leaves the executable `ic` in `compiler/target/release/ic`
+
+### Step 2: Building the runtime library
+
+TODO
+
+### Step 3: Compiling a program
+
+TODO
+
+### Step 4: Running the program
+
+TODO
