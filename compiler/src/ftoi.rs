@@ -61,7 +61,7 @@ impl<'src> FtoI<'src> {
             fl::Expr::Var(name) => {
                 if let Some(v) = map.get(fun).unwrap().params.get(name) {
                     il::Expr::Var(v.0.clone())
-                } else if map.get_mut(name).is_some() {
+                } else if map.contains_key(name) {
                     // nullary variable
                     // TODO distringuish between calls to nullary and n-ary.
                     // No need to track calls to nullary functions.
