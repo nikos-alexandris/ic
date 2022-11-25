@@ -61,14 +61,11 @@ impl<'src> FtoI<'src> {
             fl::Expr::Var(name) => {
                 if let Some(v) = map.get(fun).unwrap().params.get(name) {
                     il::Expr::Var(v.0.clone())
-                } else if let Some(_) = map.get(name) {
+                } else if map.get_mut(name).is_some() {
                     // nullary variable
-                    // TODO preconvert all nullary variables
-                    self.convert_body(
-                        map,
-                        fun,
-                        &self.program.iter().find(|d| d.name == *name).unwrap().body,
-                    )
+                    // TODO distringuish between calls to nullary and n-ary.
+                    // No need to track calls to nullary functions.
+                    il::Expr::Var(name.to_string())
                 } else {
                     // TODO check for this before transforming
                     unreachable!("[{}] Variable not found: {}", fun, name);
