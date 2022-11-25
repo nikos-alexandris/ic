@@ -7,7 +7,7 @@ use crate::{
 
 pub struct Parser<'src> {
     lexer: Lexer<'src>,
-    curr: Token,
+    curr: Token<'src>,
 }
 
 impl<'src> Parser<'src> {
@@ -18,7 +18,7 @@ impl<'src> Parser<'src> {
         }
     }
 
-    pub fn parse(&mut self) -> Option<fl::Program> {
+    pub fn parse(&mut self) -> Option<fl::Program<'src>> {
         self.advance()?;
 
         let mut defs = Vec::new();
@@ -29,7 +29,7 @@ impl<'src> Parser<'src> {
         Some(defs.into_boxed_slice())
     }
 
-    fn parse_def(&mut self) -> Option<fl::Definition> {
+    fn parse_def(&mut self) -> Option<fl::Definition<'src>> {
         let name = self.parse_var()?;
 
         match self.curr.kind {
@@ -73,8 +73,8 @@ impl<'src> Parser<'src> {
         }
     }
 
-    fn parse_expr(&mut self) -> Option<fl::Expr> {
-        match self.curr.kind.clone() {
+    fn parse_expr(&mut self) -> Option<fl::Expr<'src>> {
+        match self.curr.kind {
             TokenKind::Var(v) => {
                 self.advance()?;
                 if self.curr.kind == TokenKind::LParen {
@@ -178,7 +178,7 @@ impl<'src> Parser<'src> {
         }
     }
 
-    fn parse_var(&mut self) -> Option<String> {
+    fn parse_var(&mut self) -> Option<&'src str> {
         match self.curr.kind.clone() {
             TokenKind::Var(name) => {
                 self.advance()?;
@@ -191,7 +191,7 @@ impl<'src> Parser<'src> {
         }
     }
 
-    fn expect(&mut self, kind: TokenKind) -> Option<()> {
+    fn expect(&mut self, kind: TokenKind<'src>) -> Option<()> {
         if self.curr.kind == kind {
             self.advance()?;
             Some(())

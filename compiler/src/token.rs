@@ -2,19 +2,19 @@ use std::fmt::Display;
 
 use crate::loc::Loc;
 
-pub struct Token {
-    pub kind: TokenKind,
+pub struct Token<'src> {
+    pub kind: TokenKind<'src>,
     pub loc: Loc,
 }
 
-impl Token {
-    pub fn new(kind: TokenKind, loc: Loc) -> Self {
+impl<'src> Token<'src> {
+    pub fn new(kind: TokenKind<'src>, loc: Loc) -> Self {
         Self { kind, loc }
     }
 }
 
-#[derive(PartialEq, Clone)]
-pub enum TokenKind {
+#[derive(PartialEq, Clone, Copy)]
+pub enum TokenKind<'src> {
     // Keywords
     Cons,  // cons
     Car,   // car
@@ -34,13 +34,13 @@ pub enum TokenKind {
 
     // Literals
     Num(i64),     // [1-9][0-9]*
-    Var(String),  // [a-zA-Z][a-zA-Z0-9]*
-    Atom(String), // '[a-zA-Z][a-zA-Z0-9]*
+    Var(&'src str),  // [a-zA-Z][a-zA-Z0-9]*
+    Atom(&'src str), // '[a-zA-Z][a-zA-Z0-9]*
 
     Eof,
 }
 
-impl Display for TokenKind {
+impl<'src> Display for TokenKind<'src> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             TokenKind::Cons => write!(f, "'cons'"),

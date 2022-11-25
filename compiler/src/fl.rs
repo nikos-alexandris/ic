@@ -1,29 +1,29 @@
-pub type Program = Box<[Definition]>;
+pub type Program<'src> = Box<[Definition<'src>]>;
 
 #[derive(Debug)]
-pub struct Definition {
-    pub name: String,
-    pub args: Box<[String]>,
-    pub body: Expr,
+pub struct Definition<'src> {
+    pub name: &'src str,
+    pub args: Box<[&'src str]>,
+    pub body: Expr<'src>,
 }
 
-impl Definition {
-    pub fn new(name: String, args: Box<[String]>, body: Expr) -> Self {
+impl<'src> Definition<'src> {
+    pub fn new(name: &'src str, args: Box<[&'src str]>, body: Expr<'src>) -> Self {
         Self { name, args, body }
     }
 }
 
 #[derive(Debug)]
-pub enum Expr {
-    Var(String),
-    Atom(String),
+pub enum Expr<'src> {
+    Var(&'src str),
+    Atom(&'src str),
     Num(i64),
-    Add(Box<Expr>, Box<Expr>),
-    Eq(Box<Expr>, Box<Expr>),
-    IsPair(Box<Expr>),
-    If(Box<Expr>, Box<Expr>, Box<Expr>),
-    Call(String, Box<[Expr]>),
-    Cons(Box<Expr>, Box<Expr>),
-    Car(Box<Expr>),
-    Cdr(Box<Expr>),
+    Add(Box<Expr<'src>>, Box<Expr<'src>>),
+    Eq(Box<Expr<'src>>, Box<Expr<'src>>),
+    IsPair(Box<Expr<'src>>),
+    If(Box<Expr<'src>>, Box<Expr<'src>>, Box<Expr<'src>>),
+    Call(&'src str, Box<[Expr<'src>]>),
+    Cons(Box<Expr<'src>>, Box<Expr<'src>>),
+    Car(Box<Expr<'src>>),
+    Cdr(Box<Expr<'src>>),
 }

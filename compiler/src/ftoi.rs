@@ -3,9 +3,16 @@ use std::collections::HashMap;
 use crate::fl;
 use crate::il;
 
-pub struct FtoI {
-    pub program: fl::Program,
+pub struct FtoI<'src> {
+    pub program: fl::Program<'src>,
     var_cnt: u64,
+}
+
+#[derive(Debug)]
+struct FunctionData<'src> {
+    params: HashMap<&'src str, (String, usize)>,
+    calls: u64,
+    args: Vec<Vec<il::Expr>>,
 }
 
 macro_rules! new_var {
@@ -16,8 +23,8 @@ macro_rules! new_var {
     }};
 }
 
-impl FtoI {
-    pub fn new(program: fl::Program) -> Self {
+impl<'src> FtoI<'src> {
+    pub fn new(program: fl::Program<'src>) -> Self {
         Self {
             program,
             var_cnt: 0,
@@ -25,20 +32,19 @@ impl FtoI {
     }
 
     pub fn convert(mut self) -> il::Program {
-        let mut actuals_map = self.make_actuals_map();
+        let mut map = self.make_function_data();
 
         let mut definitions = Vec::new();
         for def in self.program.iter() {
-            let body = Self::convert_body(&mut actuals_map, &def.name, &def.body);
-            definitions.push(il::Definition::new(def.name.clone(), body));
+            let body = self.convert_body(&mut map, def.name, &def.body);
+            definitions.push(il::Definition::new(def.name.to_string(), body));
         }
 
-        for (_, (_, actuals)) in actuals_map {
-            for (name, exprs) in actuals {
-                definitions.push(il::Definition::new(
-                    name,
-                    il::Expr::Actuals(exprs.into_boxed_slice()),
-                ));
+        for (_, data) in map.iter_mut() {
+            for param in data.params.values() {
+                let vec = std::mem::take(&mut data.args[param.1]);
+                let body = il::Expr::Actuals(vec.into_boxed_slice());
+                definitions.push(il::Definition::new(param.0.clone(), body));
             }
         }
 
@@ -46,74 +52,102 @@ impl FtoI {
     }
 
     fn convert_body(
-        actuals_map: &mut HashMap<String, (u64, Vec<(String, Vec<il::Expr>)>)>,
-        fun: &String,
-        body: &fl::Expr,
+        &self,
+        map: &mut HashMap<&'src str, FunctionData<'src>>,
+        fun: &'src str,
+        body: &fl::Expr<'src>,
     ) -> il::Expr {
         match body {
-            fl::Expr::Var(name) => il::Expr::Var(name.clone()),
-            fl::Expr::Atom(name) => il::Expr::Atom(name.clone()),
+            fl::Expr::Var(name) => {
+                if let Some(v) = map.get(fun).unwrap().params.get(name) {
+                    il::Expr::Var(v.0.clone())
+                } else if let Some(_) = map.get(name) {
+                    // nullary variable
+                    // TODO preconvert all nullary variables
+                    self.convert_body(
+                        map,
+                        fun,
+                        &self.program.iter().find(|d| d.name == *name).unwrap().body,
+                    )
+                } else {
+                    // TODO check for this before transforming
+                    unreachable!("[{}] Variable not found: {}", fun, name);
+                }
+            }
+            fl::Expr::Atom(name) => il::Expr::Atom(name.to_string()),
             fl::Expr::Num(num) => il::Expr::Num(*num),
             fl::Expr::Add(lhs, rhs) => {
-                let lhs = Self::convert_body(actuals_map, fun, lhs);
-                let rhs = Self::convert_body(actuals_map, fun, rhs);
+                let lhs = self.convert_body(map, fun, lhs);
+                let rhs = self.convert_body(map, fun, rhs);
                 il::Expr::Add(Box::new(lhs), Box::new(rhs))
             }
             fl::Expr::Eq(lhs, rhs) => {
-                let lhs = Self::convert_body(actuals_map, fun, lhs);
-                let rhs = Self::convert_body(actuals_map, fun, rhs);
+                let lhs = self.convert_body(map, fun, lhs);
+                let rhs = self.convert_body(map, fun, rhs);
                 il::Expr::Eq(Box::new(lhs), Box::new(rhs))
             }
             fl::Expr::IsPair(expr) => {
-                let expr = Self::convert_body(actuals_map, fun, expr);
+                let expr = self.convert_body(map, fun, expr);
                 il::Expr::IsPair(Box::new(expr))
             }
             fl::Expr::If(cond, then, els) => {
-                let cond = Self::convert_body(actuals_map, fun, cond);
-                let then = Self::convert_body(actuals_map, fun, then);
-                let els = Self::convert_body(actuals_map, fun, els);
+                let cond = self.convert_body(map, fun, cond);
+                let then = self.convert_body(map, fun, then);
+                let els = self.convert_body(map, fun, els);
                 il::Expr::If(Box::new(cond), Box::new(then), Box::new(els))
             }
             fl::Expr::Call(name, args) => {
                 let args = args
                     .iter()
-                    .map(|arg| Self::convert_body(actuals_map, fun, arg))
+                    .map(|arg| self.convert_body(map, fun, arg))
                     .collect::<Vec<il::Expr>>();
-                let (cnt, actuals) = actuals_map.get_mut(name).unwrap();
-                let call = *cnt;
-                *cnt += 1;
+                let FunctionData {
+                    calls,
+                    args: actuals,
+                    ..
+                } = map.get_mut(*name).unwrap();
+                let call = *calls;
+                *calls += 1;
                 for (i, arg) in args.into_iter().enumerate() {
-                    actuals.get_mut(i).unwrap().1.push(arg);
+                    actuals.get_mut(i).unwrap().push(arg);
                 }
 
-                il::Expr::Call(call, name.clone())
+                il::Expr::Call(call, name.to_string())
             }
             fl::Expr::Cons(lhs, rhs) => {
-                let lhs = Self::convert_body(actuals_map, fun, lhs);
-                let rhs = Self::convert_body(actuals_map, fun, rhs);
+                let lhs = self.convert_body(map, fun, lhs);
+                let rhs = self.convert_body(map, fun, rhs);
                 il::Expr::Cons(Box::new(lhs), Box::new(rhs))
             }
             fl::Expr::Car(expr) => {
-                let expr = Self::convert_body(actuals_map, fun, expr);
+                let expr = self.convert_body(map, fun, expr);
                 il::Expr::Car(Box::new(expr))
             }
             fl::Expr::Cdr(expr) => {
-                let expr = Self::convert_body(actuals_map, fun, expr);
+                let expr = self.convert_body(map, fun, expr);
                 il::Expr::Cdr(Box::new(expr))
             }
         }
     }
 
-    fn make_actuals_map(&mut self) -> HashMap<String, (u64, Vec<(String, Vec<il::Expr>)>)> {
-        let mut actuals_map = HashMap::new();
+    fn make_function_data(&mut self) -> HashMap<&'src str, FunctionData<'src>> {
+        let mut map = HashMap::new();
         for def in self.program.iter() {
-            let actuals = def
-                .args
-                .iter()
-                .map(|_| (new_var!(self), Vec::new()))
-                .collect();
-            actuals_map.insert(def.name.clone(), (0, actuals));
+            let mut params = HashMap::new();
+            for (i, param) in def.args.iter().enumerate() {
+                params.insert(*param, (new_var!(self), i));
+            }
+            map.insert(
+                def.name,
+                FunctionData {
+                    params,
+                    calls: 0,
+                    args: (0..def.args.len())
+                        .map(|_| Vec::new())
+                        .collect::<Vec<Vec<il::Expr>>>(),
+                },
+            );
         }
-        actuals_map
+        map
     }
 }

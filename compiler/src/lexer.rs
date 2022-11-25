@@ -36,7 +36,7 @@ impl<'src> Lexer<'src> {
         }
     }
 
-    pub fn next(&mut self) -> Option<Token> {
+    pub fn next(&mut self) -> Option<Token<'src>> {
         self.skip_whitespace();
 
         self.start_location = self.end_location;
@@ -66,7 +66,7 @@ impl<'src> Lexer<'src> {
         self.chars.as_str().is_empty()
     }
 
-    fn lex_num(&mut self) -> Token {
+    fn lex_num(&mut self) -> Token<'src> {
         let start = self.chars.clone();
 
         self.advance();
@@ -82,7 +82,7 @@ impl<'src> Lexer<'src> {
         self.make_tok(TokenKind::Num(num))
     }
 
-    fn lex_alpha(&mut self) -> Option<Token> {
+    fn lex_alpha(&mut self) -> Option<Token<'src>> {
         let start = self.chars.clone();
 
         self.advance();
@@ -101,19 +101,19 @@ impl<'src> Lexer<'src> {
 
         let lexeme = &start.as_str()[..len];
 
-        if let Some(kind) = KEYWORDS.get(lexeme).cloned() {
-            Some(self.make_tok(kind))
+        if let Some(kind) = KEYWORDS.get(lexeme) {
+            Some(self.make_tok(*kind))
         } else {
             if has_q {
                 self.error("Unexpected character: '?'");
                 None
             } else {
-                Some(self.make_tok(TokenKind::Var(lexeme.to_string())))
+                Some(self.make_tok(TokenKind::Var(lexeme)))
             }
         }
     }
 
-    fn lex_atom(&mut self) -> Option<Token> {
+    fn lex_atom(&mut self) -> Option<Token<'src>> {
         self.advance();
 
         if self.is_eof() || !self.first().is_alphabetic() {
@@ -131,17 +131,16 @@ impl<'src> Lexer<'src> {
         }
 
         let lexeme = &start.as_str()[..len];
-        let atom = lexeme.to_string();
 
-        Some(self.make_tok(TokenKind::Atom(atom)))
+        Some(self.make_tok(TokenKind::Atom(lexeme)))
     }
 
-    fn make_single(&mut self, kind: TokenKind) -> Token {
+    fn make_single(&mut self, kind: TokenKind<'src>) -> Token<'src> {
         self.advance();
         self.make_tok(kind)
     }
 
-    fn make_tok(&mut self, kind: TokenKind) -> Token {
+    fn make_tok(&mut self, kind: TokenKind<'src>) -> Token<'src> {
         Token::new(kind, self.start_location)
     }
 
