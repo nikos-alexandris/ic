@@ -14,10 +14,10 @@ The process of compilation is:
 ### Compiler
 
 - [X] Parse functional programs as shown in `compiler/test.fl`
+- [ ] Peform error checking on the functional program (undefined variables, wrong argument arities, definition of nullary variable `result`, etc.)
+- [X] Handle function local arguments in the functional source program
 - [X] Transform the functional program to the equivalent intensional program
 - [ ] Compile the intensional program to C
-- [ ] Test that the source programs includes the nullary variable `result`
-- [X] Handle function local arguments in the functional source program
 
 ### Runtime
 
