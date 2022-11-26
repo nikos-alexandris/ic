@@ -28,9 +28,9 @@ The process of compilation is:
 
 ## Dependencies
 
-- The Rust toolchain (https://www.rust-lang.org/tools/install)
+- The Rust toolchain (<https://www.rust-lang.org/tools/install>)
 
-- GCC (https://gcc.gnu.org/install/)
+- GCC (<https://gcc.gnu.org/install/>)
 
 ## Running a program
 
