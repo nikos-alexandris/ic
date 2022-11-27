@@ -149,6 +149,19 @@ impl<'src> ItoC<'src> {
                 );
                 tmp
             }
+            il::Expr::Mul(lhs, rhs) => {
+                let tmp = gen_tmp!(self);
+                let lhs = self.convert_expr(f, world, lhs);
+                let rhs = self.convert_expr(f, world, rhs);
+                wl!(
+                    self,
+                    "IC_VALUE {} = IC_mul({}, {});",
+                    fmt_tmp!(tmp),
+                    fmt_tmp!(lhs),
+                    fmt_tmp!(rhs)
+                );
+                tmp
+            }
             il::Expr::Eq(lhs, rhs) => {
                 let tmp = gen_tmp!(self);
                 let lhs = self.convert_expr(f, world, lhs);

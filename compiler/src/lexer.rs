@@ -23,6 +23,7 @@ static KEYWORDS: phf::Map<&'static str, TokenKind> = phf_map! {
     "pair?" => TokenKind::PairQ,
     "add" => TokenKind::Add,
     "sub" => TokenKind::Sub,
+    "mul" => TokenKind::Mul,
     "if" => TokenKind::If,
     "then" => TokenKind::Then,
     "else" => TokenKind::Else,

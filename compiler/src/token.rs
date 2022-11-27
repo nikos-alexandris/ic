@@ -23,18 +23,19 @@ pub enum TokenKind<'src> {
     PairQ, // pair?
     Add,   // add
     Sub,   // sub
+    Mul,   // mul
     If,    // if
     Then,  // then
     Else,  //else
 
     // Symbols
-    LParen,    // (
-    RParen,    // )
-    Comma,     // ,
-    Equals,    // =
+    LParen, // (
+    RParen, // )
+    Comma,  // ,
+    Equals, // =
 
     // Literals
-    Num(i64),     // [1-9][0-9]*
+    Num(i64),        // [1-9][0-9]*
     Var(&'src str),  // [a-zA-Z][a-zA-Z0-9]*
     Atom(&'src str), // '[a-zA-Z][a-zA-Z0-9]*
 
@@ -51,6 +52,7 @@ impl<'src> Display for TokenKind<'src> {
             TokenKind::PairQ => write!(f, "'pair?'"),
             TokenKind::Add => write!(f, "'add'"),
             TokenKind::Sub => write!(f, "'sub'"),
+            TokenKind::Mul => write!(f, "'mul'"),
             TokenKind::If => write!(f, "'if'"),
             TokenKind::Then => write!(f, "'then'"),
             TokenKind::Else => write!(f, "'else'"),

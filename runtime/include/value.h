@@ -35,6 +35,7 @@ IC_VALUE IC_pair(IC_WORLD world, IC_VALUE (*f)(IC_WORLD));
 
 IC_VALUE IC_add(IC_VALUE a, IC_VALUE b);
 IC_VALUE IC_sub(IC_VALUE a, IC_VALUE b);
+IC_VALUE IC_mul(IC_VALUE a, IC_VALUE b);
 IC_VALUE IC_eq(IC_VALUE a, IC_VALUE b);
 void IC_value_show(IC_VALUE value);
 

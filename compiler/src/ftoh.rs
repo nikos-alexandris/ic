@@ -120,6 +120,10 @@ impl<'src> FtoH<'src> {
                 Box::new(self.convert_body(definitions, def, lhs)?),
                 Box::new(self.convert_body(definitions, def, rhs)?),
             ),
+            fl::Expr::Mul(lhs, rhs) => hir::Expr::Mul(
+                Box::new(self.convert_body(definitions, def, lhs)?),
+                Box::new(self.convert_body(definitions, def, rhs)?),
+            ),
             fl::Expr::Eq(lhs, rhs) => hir::Expr::Eq(
                 Box::new(self.convert_body(definitions, def, lhs)?),
                 Box::new(self.convert_body(definitions, def, rhs)?),
