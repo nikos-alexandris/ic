@@ -14,7 +14,7 @@ The process of compilation is:
 
 ### Compiler
 
-- [X] Parse functional programs as shown in `compiler/test.fl`
+- [X] Parse functional programs as shown in `prog.fl`
 - [X] Peform error checking on the functional program (undefined variables, wrong argument arities, definition of nullary variable `result`, etc.)
 - [X] Handle function local arguments in the functional source program
 - [X] Transform the functional program to the equivalent intensional program
@@ -32,6 +32,10 @@ The process of compilation is:
 - The Rust toolchain (<https://www.rust-lang.org/tools/install>)
 
 - GCC (<https://gcc.gnu.org/install/>)
+
+- CMake (<https://cmake.org/install/>)
+
+- Make (<https://www.gnu.org/software/make/>)
 
 ## Running a program
 
