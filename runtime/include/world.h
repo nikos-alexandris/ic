@@ -3,31 +3,35 @@
 
 #include "common.h"
 
-struct tag_list {
+typedef struct IC_tag_list {
 	usize tag;
-	struct tag_list* cdr;
-};
+	struct IC_tag_list* cdr;
+} IC_TAG_LIST;
 
-enum choice { CAR = 0, CDR = 1 };
+typedef enum IC_choice { IC_CAR = 0, IC_CDR = 1 } IC_CHOICE;
 
-struct choice_list {
-	enum choice choice;
-	struct choice_list* cdr;
-};
+typedef struct IC_choice_list {
+	IC_CHOICE choice;
+	struct IC_choice_list* cdr;
+} IC_CHOICE_LIST;
 
-struct world {
-	struct tag_list* tags;
-	struct choice_list* choices;
-};
+typedef struct IC_world {
+	IC_TAG_LIST* tags;
+	IC_CHOICE_LIST* choices;
+} IC_WORLD;
 
-struct world world_new(void);
+IC_WORLD IC_world_new(void);
 
-struct world world_cons_tag(const struct world* world, usize tag);
+IC_WORLD IC_world_drop_choices(const IC_WORLD* world);
 
-struct world world_uncons_tag(const struct world* world, usize* tag);
+bool IC_world_has_choices(const IC_WORLD* world);
 
-struct world world_cons_choice(const struct world* world, enum choice choice);
+IC_WORLD IC_world_cons_tag(const IC_WORLD* world, usize tag);
 
-struct world world_uncons_choice(const struct world* world, enum choice* choice);
+IC_WORLD IC_world_uncons_tag(const IC_WORLD* world, usize* tag);
+
+IC_WORLD IC_world_cons_choice(const IC_WORLD* world, IC_CHOICE choice);
+
+IC_WORLD IC_world_uncons_choice(const IC_WORLD* world, IC_CHOICE* choice);
 
 #endif /* WORLD_H */

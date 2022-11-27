@@ -2,31 +2,39 @@
 #define VALUE_H
 
 #include "common.h"
+#include "world.h"
 
-extern const char* atom_names[];
+extern const char* IC_atom_names[];
 
-struct value {
-	enum { VALUE_INTEGER, VALUE_ATOM, VALUE_PAIR } tag;
+typedef struct IC_value {
+	enum { IC_VALUE_INTEGER, IC_VALUE_ATOM, IC_VALUE_OBJECT } tag;
 	union {
-		i64 integer;
+		long integer;
 		usize atom;
+		struct IC_object* object;
+	} as;
+} IC_VALUE;
+
+typedef struct IC_object {
+	enum { IC_OBJECT_PAIR } tag;
+	union {
 		struct {
-			struct value* car;
-			struct value* cdr;
+			IC_WORLD world;
+			IC_VALUE (*f)(IC_WORLD);
 		} pair;
 	} as;
-};
+} IC_OBJECT;
 
-struct value* value_integer(i64 integer);
+#define IC_INTEGER(x) ((IC_VALUE){IC_VALUE_INTEGER, {.integer = (x)}})
+#define IC_ATOM(x) ((IC_VALUE){IC_VALUE_ATOM, {.atom = (x)}})
+IC_VALUE IC_pair(IC_WORLD world, IC_VALUE (*f)(IC_WORLD));
 
-struct value* value_atom(usize atom);
+#define IC_IS_PAIR(v) (((v).tag == IC_VALUE_OBJECT && (v).as.object->tag == IC_OBJECT_PAIR) ? IC_ATOM(1) : IC_ATOM(2))
 
-struct value* value_pair(struct value* car, struct value* cdr);
+#define IC_IS_TRUTHY(v) ((v).tag == IC_VALUE_ATOM && (v).as.atom == 1)
 
-bool value_is_pair(const struct value* value);
-
-struct value* value_add(const struct value* a, const struct value* b);
-
-void value_show(const struct value* value);
+IC_VALUE IC_add(IC_VALUE a, IC_VALUE b);
+IC_VALUE IC_eq(IC_VALUE a, IC_VALUE b);
+void IC_value_show(IC_VALUE value);
 
 #endif /* VALUE_H */

@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::{
     fl,
     lexer::Lexer,
@@ -45,9 +47,15 @@ impl<'src> Parser<'src> {
             TokenKind::LParen => {
                 self.advance()?;
                 let mut args = Vec::new();
+                let mut arg_set = HashSet::new();
                 while !self.lexer.is_eof() {
                     let arg = self.parse_var()?;
                     args.push(arg);
+
+                    if arg_set.contains(&arg) {
+                        self.error(format!("duplicate argument '{}'", arg));
+                    }
+                    arg_set.insert(arg);
 
                     if self.curr.kind == TokenKind::RParen {
                         break;
@@ -206,7 +214,7 @@ impl<'src> Parser<'src> {
         Some(())
     }
 
-    fn error(&self, message: &str) {
+    fn error<S: AsRef<str>>(&self, message: S) {
         self.lexer.error(message);
     }
 }

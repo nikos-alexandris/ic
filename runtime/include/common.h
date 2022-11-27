@@ -10,6 +10,6 @@ typedef int64_t i64;
 
 typedef enum { false, true } bool;
 
-__attribute__((noreturn)) void runtime_error(const char* message);
+__attribute__((noreturn)) void IC_runtime_error(const char* fmt, ...);
 
 #endif /* COMMON_H */

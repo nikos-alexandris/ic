@@ -5,19 +5,20 @@
 The process of compilation is:
 
 1. Parse the functional program
-2. Transform the functional program to the equivalent intensional one
-3. Compile the intensional program to C
-4. Compile the C program to an executable and link it with the runtime library
+2. Transform the functional program to a high level intermediate representation
+3. Compile the HIR to the intensional program
+4. Compile the intensional program to C
+5. Compile the C program to an executable and link it with the runtime library
 
 ## Roadmap
 
 ### Compiler
 
 - [X] Parse functional programs as shown in `compiler/test.fl`
-- [ ] Peform error checking on the functional program (undefined variables, wrong argument arities, definition of nullary variable `result`, etc.)
+- [X] Peform error checking on the functional program (undefined variables, wrong argument arities, definition of nullary variable `result`, etc.)
 - [X] Handle function local arguments in the functional source program
 - [X] Transform the functional program to the equivalent intensional program
-- [ ] Compile the intensional program to C
+- [X] Compile the intensional program to C
 
 ### Runtime
 
@@ -45,14 +46,27 @@ Leaves the executable `ic` in `compiler/target/release/ic`
 
 ### Step 2: Building the runtime library
 
-TODO
+```bash
+cd runtime
+mkdir build
+cd build
+cmake -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ..
+make
+```
+
+Leaves the static library `libic.a` in `runtime/build/libic.a`
 
 ### Step 3: Compiling a program
 
 ```bash
-ic prog.fl
+/path/to/compiler/target/release/ic prog.fl
 ```
+
+Leaves the generated file `out.c` in the directory where the command was run
 
 ### Step 4: Running the program
 
-TODO
+```bash
+gcc out.c -I/path/to/runtime/include -L/path/to/runtime/build -lic
+./a.out
+```

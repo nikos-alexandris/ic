@@ -1,8 +1,12 @@
 use std::fs::read_to_string;
 
 pub mod fl;
+mod ftoh;
 pub mod ftoi;
+pub mod hir;
+mod htoi;
 pub mod il;
+pub mod itoc;
 pub mod lexer;
 pub mod loc;
 pub mod parser;
@@ -18,7 +22,11 @@ fn main() {
     let lexer = lexer::Lexer::new(&source);
     let mut parser = parser::Parser::new(lexer);
     let fp = parser.parse().unwrap();
-    let ftoi = ftoi::FtoI::new(fp);
-    let ip = ftoi.convert();
-    println!("{:#?}", ip);
+    let ftoh = ftoh::FtoH::new(fp);
+    let hir = ftoh.convert().unwrap();
+    let htoi = htoi::HtoI::new(hir);
+    let il = htoi.convert();
+    let itoc = itoc::ItoC::new(il);
+    itoc.generate();
+    // println!("{:#?}", il);
 }

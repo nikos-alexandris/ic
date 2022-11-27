@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.24)
-project(runtime C)
+cmake_minimum_required(VERSION 3.23)
+project(library C)
 
-set(CMAKE_C_STANDARD 90)
+set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_FLAGS "-Wall -Wextra -pedantic")
 
-add_executable(runtime source/main.c include/world.h source/world.c include/common.h include/value.h source/value.c source/common.c source/operators.c include/operators.h)
-target_include_directories(runtime PRIVATE include)
+add_library(ic STATIC include/world.h source/world.c include/common.h include/value.h source/value.c source/common.c)
+target_include_directories(ic PRIVATE include)

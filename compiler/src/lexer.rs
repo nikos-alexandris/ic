@@ -167,7 +167,11 @@ impl<'src> Lexer<'src> {
         }
     }
 
-    pub fn error(&self, message: &str) {
-        eprintln!("[Parse error][{}]: {}.", self.end_location, message);
+    pub fn error<S: AsRef<str>>(&self, message: S) {
+        eprintln!(
+            "[Parse error][{}]: {}.",
+            self.end_location,
+            message.as_ref()
+        );
     }
 }

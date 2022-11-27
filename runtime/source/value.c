@@ -3,71 +3,70 @@
 #include <malloc.h>
 #include <stdio.h>
 
-struct value* value_integer(i64 integer)
-{
-	struct value* value = malloc(sizeof(struct value));
-	value->tag = VALUE_INTEGER;
-	value->as.integer = integer;
-	return value;
-}
+static const char* IC_value_show_type(IC_VALUE value);
 
-struct value* value_atom(usize atom)
+IC_VALUE IC_pair(IC_WORLD world, IC_VALUE (*f)(IC_WORLD))
 {
-	struct value* value = malloc(sizeof(struct value));
-	value->tag = VALUE_ATOM;
-	value->as.atom = atom;
-	return value;
-}
-
-struct value* value_pair(struct value* car, struct value* cdr)
-{
-	struct value* value = malloc(sizeof(struct value));
-	value->tag = VALUE_PAIR;
-	value->as.pair.car = car;
-	value->as.pair.cdr = cdr;
-	return value;
-}
-
-bool value_is_pair(const struct value* value)
-{
-	return value->tag == VALUE_PAIR;
-}
-
-struct value* value_add(const struct value* a, const struct value* b)
-{
-	struct value* value;
-
-	if (a->tag != VALUE_INTEGER || b->tag != VALUE_INTEGER) {
-		runtime_error("Invalid value tag");
+	IC_OBJECT* object = malloc(sizeof(*object));
+	if (!object) {
+		IC_runtime_error("out of memory", 0);
 	}
+	object->tag = IC_OBJECT_PAIR;
+	object->as.pair.f = f;
+	object->as.pair.world = world;
 
-	value = malloc(sizeof(struct value));
-	value->tag = VALUE_INTEGER;
-	value->as.integer = a->as.integer + b->as.integer;
-	return value;
+	return (IC_VALUE){IC_VALUE_OBJECT, {.object = object}};
 }
 
-void value_show(const struct value* value)
+IC_VALUE IC_add(IC_VALUE a, IC_VALUE b)
 {
-	switch (value->tag) {
-	case VALUE_INTEGER: {
-		printf("%ld", value->as.integer);
+	if (a.tag == IC_VALUE_INTEGER && b.tag == IC_VALUE_INTEGER) {
+		return IC_INTEGER(a.as.integer + b.as.integer);
+	} else {
+		IC_runtime_error("cannot add %s and %s", IC_value_show_type(a), IC_value_show_type(b));
+	}
+}
+
+IC_VALUE IC_eq(IC_VALUE a, IC_VALUE b)
+{
+	if (a.tag == IC_VALUE_INTEGER && b.tag == IC_VALUE_INTEGER) {
+		return a.as.integer == b.as.integer ? IC_ATOM(1) : IC_ATOM(2);
+	} else if (a.tag == IC_VALUE_ATOM && b.tag == IC_VALUE_ATOM) {
+		return a.as.atom == b.as.atom ? IC_ATOM(1) : IC_ATOM(2);
+	} else {
+		IC_runtime_error("cannot compare %s and %s", IC_value_show_type(a), IC_value_show_type(b));
+	}
+}
+
+void IC_value_show(IC_VALUE value)
+{
+	switch (value.tag) {
+	case IC_VALUE_INTEGER:
+		printf("%ld\n", value.as.integer);
+		break;
+	case IC_VALUE_ATOM:
+		printf("%s\n", IC_atom_names[value.as.atom]);
+		break;
+	case IC_VALUE_OBJECT:
+		switch (value.as.object->tag) {
+		case IC_OBJECT_PAIR:
+			printf("(_,_)");
+			break;
+		}
 		break;
 	}
-	case VALUE_ATOM: {
-		printf("'%s", atom_names[value->as.atom]);
-		break;
-	}
-	case VALUE_PAIR: {
-		printf("(");
-		value_show(value->as.pair.car);
-		printf(" . ");
-		value_show(value->as.pair.cdr);
-		printf(")");
-		break;
-	}
-	default: {
-		runtime_error("Invalid value tag");
-	}
+}
+
+static const char* IC_value_show_type(IC_VALUE value)
+{
+	switch (value.tag) {
+	case IC_VALUE_INTEGER:
+		return "integer";
+	case IC_VALUE_ATOM:
+		return "atom";
+	case IC_VALUE_OBJECT:
+		return "object";
+	default:
+		IC_runtime_error("unknown value type", 0);
 	}
 }
