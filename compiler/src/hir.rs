@@ -39,6 +39,7 @@ pub enum Expr<'src> {
     Atom(usize),
     Num(i64),
     Add(Box<Expr<'src>>, Box<Expr<'src>>),
+    Sub(Box<Expr<'src>>, Box<Expr<'src>>),
     Eq(Box<Expr<'src>>, Box<Expr<'src>>),
     IsPair(Box<Expr<'src>>),
     If(Box<Expr<'src>>, Box<Expr<'src>>, Box<Expr<'src>>),

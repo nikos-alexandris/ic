@@ -125,6 +125,15 @@ impl<'src> Parser<'src> {
                 self.expect(TokenKind::RParen)?;
                 Some(fl::Expr::Add(Box::new(lhs), Box::new(rhs)))
             }
+            TokenKind::Sub => {
+                self.advance()?;
+                self.expect(TokenKind::LParen)?;
+                let lhs = self.parse_expr()?;
+                self.expect(TokenKind::Comma)?;
+                let rhs = self.parse_expr()?;
+                self.expect(TokenKind::RParen)?;
+                Some(fl::Expr::Sub(Box::new(lhs), Box::new(rhs)))
+            }
             TokenKind::EqQ => {
                 self.advance()?;
                 self.expect(TokenKind::LParen)?;

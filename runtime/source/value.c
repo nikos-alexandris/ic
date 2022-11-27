@@ -27,6 +27,15 @@ IC_VALUE IC_add(IC_VALUE a, IC_VALUE b)
 	}
 }
 
+IC_VALUE IC_sub(IC_VALUE a, IC_VALUE b)
+{
+	if (a.tag == IC_VALUE_INTEGER && b.tag == IC_VALUE_INTEGER) {
+		return IC_INTEGER(a.as.integer - b.as.integer);
+	} else {
+		IC_runtime_error("cannot add %s and %s", IC_value_show_type(a), IC_value_show_type(b));
+	}
+}
+
 IC_VALUE IC_eq(IC_VALUE a, IC_VALUE b)
 {
 	if (a.tag == IC_VALUE_INTEGER && b.tag == IC_VALUE_INTEGER) {

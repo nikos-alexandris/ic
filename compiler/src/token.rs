@@ -22,6 +22,7 @@ pub enum TokenKind<'src> {
     EqQ,   // eq?
     PairQ, // pair?
     Add,   // add
+    Sub,   // sub
     If,    // if
     Then,  // then
     Else,  //else
@@ -49,6 +50,7 @@ impl<'src> Display for TokenKind<'src> {
             TokenKind::EqQ => write!(f, "'eq?'"),
             TokenKind::PairQ => write!(f, "'pair?'"),
             TokenKind::Add => write!(f, "'add'"),
+            TokenKind::Sub => write!(f, "'sub'"),
             TokenKind::If => write!(f, "'if'"),
             TokenKind::Then => write!(f, "'then'"),
             TokenKind::Else => write!(f, "'else'"),

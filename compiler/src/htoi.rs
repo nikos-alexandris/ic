@@ -91,6 +91,10 @@ impl<'src> HtoI<'src> {
                 Box::new(self.convert_expr(actuals, left)),
                 Box::new(self.convert_expr(actuals, right)),
             ),
+            hir::Expr::Sub(left, right) => il::Expr::Sub(
+                Box::new(self.convert_expr(actuals, left)),
+                Box::new(self.convert_expr(actuals, right)),
+            ),
             hir::Expr::Eq(left, right) => il::Expr::Eq(
                 Box::new(self.convert_expr(actuals, left)),
                 Box::new(self.convert_expr(actuals, right)),
