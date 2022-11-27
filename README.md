@@ -17,8 +17,10 @@ The process of compilation is:
 - [X] Parse functional programs as shown in `prog.fl`
 - [X] Peform error checking on the functional program (undefined variables, wrong argument arities, definition of nullary variable `result`, etc.)
 - [X] Handle function local arguments in the functional source program
-- [X] Transform the functional program to the equivalent intensional program
+- [X] Transform the functional program to a high level intermediate representation
+- [X] Transform the HIR to the equivalent intensional program
 - [X] Compile the intensional program to C
+- [ ] Don't require the user to compile and link the generated code; do it automatically
 
 ### Runtime
 

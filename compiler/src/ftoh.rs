@@ -31,6 +31,8 @@ impl<'src> FtoH<'src> {
     }
 
     pub fn convert(mut self) -> Option<hir::Program<'src>> {
+        self.check_for_result()?;
+
         self.check_duplicate_definitions()?;
 
         let old_definitions = std::mem::replace(&mut self.program, Box::new([]));
@@ -47,6 +49,17 @@ impl<'src> FtoH<'src> {
             definitions.into_boxed_slice(),
             self.atom_names.into_boxed_slice(),
         ))
+    }
+
+    fn check_for_result(&self) -> Option<()> {
+        for def in self.program.iter() {
+            if def.name == "result" {
+                return Some(());
+            }
+        }
+
+        self.error("Exactly one 'result' nullary function must be defined");
+        None
     }
 
     fn check_duplicate_definitions(&mut self) -> Option<()> {
