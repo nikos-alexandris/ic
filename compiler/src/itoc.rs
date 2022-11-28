@@ -5,6 +5,7 @@ use crate::il;
 
 pub struct ItoC<'src> {
     pub program: il::Program<'src>,
+    ic_home: String,
     out: BufWriter<File>,
     tmp_cnt: usize,
     indentation: usize,
@@ -48,10 +49,12 @@ macro_rules! dedent {
 }
 
 impl<'src> ItoC<'src> {
-    pub fn new(program: il::Program<'src>) -> Self {
+    pub fn new(program: il::Program<'src>, ic_home: String) -> Self {
+        std::fs::create_dir("_build").unwrap();
         Self {
             program,
-            out: BufWriter::new(File::create("out.c").unwrap()),
+            ic_home,
+            out: BufWriter::new(File::create("_build/out.c").unwrap()),
             tmp_cnt: 0,
             indentation: 0,
         }
@@ -63,6 +66,23 @@ impl<'src> ItoC<'src> {
         self.prototypes();
         self.main();
         self.definitions();
+
+        self.compile();
+    }
+
+    fn compile(&mut self) {
+        std::process::Command::new("gcc")
+            .arg("-o")
+            .arg("_build/out")
+            .arg("_build/out.c")
+            .arg("-I")
+            .arg(self.ic_home.clone() + "/runtime/include")
+            .arg("-L")
+            .arg(self.ic_home.clone() + "/runtime/lib")
+            .arg("-l")
+            .arg("ic")
+            .spawn()
+            .unwrap();
     }
 
     fn prelude(&mut self) {
