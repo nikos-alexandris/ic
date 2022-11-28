@@ -41,45 +41,54 @@ The process of compilation is:
 
 ## Running a program
 
-### Step 1: Building the compiler
+### Step 1: Cloning the repository
 
 ```bash
-cd compiler
+git clone https://github.com/nikos-alexandris/ic
+```
+
+### Step 2: Setting up the environment variable
+
+This is needed for the compiler to know where the runtime library is located. This should be set to the root of the repository you just cloned.
+
+```bash
+cd ic
+export IC_HOME=$(pwd)
+```
+
+### Step 3: Building the compiler
+
+```bash
+cd $IC_HOME/compiler
 cargo build --release
 ```
 
-Leaves the executable `ic` in `compiler/target/release/ic`
+Leaves the executable `ic` in `$IC_HOME/compiler/target/release/ic`
 
-### Step 2: Building the runtime library
+### Step 4: Building the runtime library
 
 ```bash
-cd runtime
+cd $IC_HOME/runtime
 mkdir lib
 cd lib
 cmake -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ..
 make -j $(nproc)
 ```
 
-Leaves the static library `libic.a` in `runtime/lib/libic.a`
+Leaves the static library `libic.a` in `$IC_HOME/runtime/lib/libic.a`
 
-### Step 3: Setting up the environment variable
-
-```bash
-export IC_HOME=/path/to/ic
-```
-
-### Step 4: Compiling a program
+### Step 5: Compiling the program
 
 If the program is called `prog.fl`:
 
 ```bash
 cd /path/to/program
-/path/to/compiler/target/release/ic prog.fl
+$IC_HOME/compiler/target/release/ic prog.fl
 ```
 
 Creates a `_build` subdirectory in the current directory with the generated executable `out` (and the generated C source code `out.c`)
 
-### Step 4: Running the program
+### Step 6: Running the program
 
 ```bash
 _build/out
