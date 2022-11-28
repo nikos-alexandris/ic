@@ -128,6 +128,10 @@ impl<'src> FtoH<'src> {
                 Box::new(self.convert_body(definitions, def, lhs)?),
                 Box::new(self.convert_body(definitions, def, rhs)?),
             ),
+            fl::Expr::Lq(lhs, rhs) => hir::Expr::Lq(
+                Box::new(self.convert_body(definitions, def, lhs)?),
+                Box::new(self.convert_body(definitions, def, rhs)?),
+            ),
             fl::Expr::IsPair(expr) => {
                 hir::Expr::IsPair(Box::new(self.convert_body(definitions, def, expr)?))
             }

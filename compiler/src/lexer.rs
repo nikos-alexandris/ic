@@ -20,6 +20,7 @@ static KEYWORDS: phf::Map<&'static str, TokenKind> = phf_map! {
     "car" => TokenKind::Car,
     "cdr" => TokenKind::Cdr,
     "eq?" => TokenKind::EqQ,
+    "lq?" => TokenKind::LqQ,
     "pair?" => TokenKind::PairQ,
     "add" => TokenKind::Add,
     "sub" => TokenKind::Sub,

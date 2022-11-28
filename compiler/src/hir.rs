@@ -42,6 +42,7 @@ pub enum Expr<'src> {
     Sub(Box<Expr<'src>>, Box<Expr<'src>>),
     Mul(Box<Expr<'src>>, Box<Expr<'src>>),
     Eq(Box<Expr<'src>>, Box<Expr<'src>>),
+    Lq(Box<Expr<'src>>, Box<Expr<'src>>),
     IsPair(Box<Expr<'src>>),
     If(Box<Expr<'src>>, Box<Expr<'src>>, Box<Expr<'src>>),
     Call(&'src str, Box<[Expr<'src>]>, usize),

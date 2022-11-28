@@ -20,6 +20,7 @@ pub enum TokenKind<'src> {
     Car,   // car
     Cdr,   // cdr
     EqQ,   // eq?
+    LqQ,  // lq?
     PairQ, // pair?
     Add,   // add
     Sub,   // sub
@@ -49,6 +50,7 @@ impl<'src> Display for TokenKind<'src> {
             TokenKind::Car => write!(f, "'car'"),
             TokenKind::Cdr => write!(f, "'cdr'"),
             TokenKind::EqQ => write!(f, "'eq?'"),
+            TokenKind::LqQ => write!(f, "'lq?'"),
             TokenKind::PairQ => write!(f, "'pair?'"),
             TokenKind::Add => write!(f, "'add'"),
             TokenKind::Sub => write!(f, "'sub'"),

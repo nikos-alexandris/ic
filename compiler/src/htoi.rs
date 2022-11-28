@@ -103,6 +103,10 @@ impl<'src> HtoI<'src> {
                 Box::new(self.convert_expr(actuals, left)),
                 Box::new(self.convert_expr(actuals, right)),
             ),
+            hir::Expr::Lq(left, right) => il::Expr::Lq(
+                Box::new(self.convert_expr(actuals, left)),
+                Box::new(self.convert_expr(actuals, right)),
+            ),
             hir::Expr::IsPair(expr) => il::Expr::IsPair(Box::new(self.convert_expr(actuals, expr))),
             hir::Expr::If(cond, then, els) => il::Expr::If(
                 Box::new(self.convert_expr(actuals, cond)),

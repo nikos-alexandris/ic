@@ -56,6 +56,15 @@ IC_VALUE IC_eq(IC_VALUE a, IC_VALUE b)
 	}
 }
 
+IC_VALUE IC_lq(IC_VALUE a, IC_VALUE b)
+{
+	if (a.tag == IC_VALUE_INTEGER && b.tag == IC_VALUE_INTEGER) {
+		return a.as.integer <= b.as.integer ? IC_ATOM(1) : IC_ATOM(2);
+	} else {
+		IC_runtime_error("cannot use 'lq?' on %s and %s", IC_value_show_type(a), IC_value_show_type(b));
+	}
+}
+
 void IC_value_show(IC_VALUE value, bool print_newline)
 {
 	switch (value.tag) {

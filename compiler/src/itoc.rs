@@ -195,6 +195,19 @@ impl<'src> ItoC<'src> {
                 );
                 tmp
             }
+            il::Expr::Lq(lhs, rhs) => {
+                let tmp = gen_tmp!(self);
+                let lhs = self.convert_expr(f, world, lhs);
+                let rhs = self.convert_expr(f, world, rhs);
+                wl!(
+                    self,
+                    "IC_VALUE {} = IC_lq({}, {});",
+                    fmt_tmp!(tmp),
+                    fmt_tmp!(lhs),
+                    fmt_tmp!(rhs)
+                );
+                tmp
+            }
             il::Expr::IsPair(expr) => {
                 let tmp_world = gen_tmp!(self);
                 wl!(
