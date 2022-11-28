@@ -1,4 +1,4 @@
-result = last(concat(list))
+result = concat(list)
 
 concat(l) =
     if pair?(l)

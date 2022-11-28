@@ -333,7 +333,7 @@ impl<'src> ItoC<'src> {
 
         wl!(self, "IC_WORLD world = IC_world_new();");
         wl!(self, "IC_VALUE res = result(world);");
-        wl!(self, "IC_value_show(res);");
+        wl!(self, "IC_value_show(res, true);");
         wl!(self, "return 0;");
 
         dedent!(self);

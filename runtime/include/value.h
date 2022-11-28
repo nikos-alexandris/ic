@@ -37,6 +37,6 @@ IC_VALUE IC_add(IC_VALUE a, IC_VALUE b);
 IC_VALUE IC_sub(IC_VALUE a, IC_VALUE b);
 IC_VALUE IC_mul(IC_VALUE a, IC_VALUE b);
 IC_VALUE IC_eq(IC_VALUE a, IC_VALUE b);
-void IC_value_show(IC_VALUE value);
+void IC_value_show(IC_VALUE value, bool print_newline);
 
 #endif /* VALUE_H */

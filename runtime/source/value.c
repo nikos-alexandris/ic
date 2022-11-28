@@ -56,22 +56,31 @@ IC_VALUE IC_eq(IC_VALUE a, IC_VALUE b)
 	}
 }
 
-void IC_value_show(IC_VALUE value)
+void IC_value_show(IC_VALUE value, bool print_newline)
 {
 	switch (value.tag) {
 	case IC_VALUE_INTEGER:
-		printf("%ld\n", value.as.integer);
+		printf("%ld", value.as.integer);
 		break;
 	case IC_VALUE_ATOM:
-		printf("%s\n", IC_atom_names[value.as.atom]);
+		printf("'%s", IC_atom_names[value.as.atom]);
 		break;
 	case IC_VALUE_OBJECT:
 		switch (value.as.object->tag) {
-		case IC_OBJECT_PAIR:
-			printf("(_,_)");
+		case IC_OBJECT_PAIR: {
+			IC_WORLD w = IC_world_drop_choices(&value.as.object->as.pair.world);
+			printf("(");
+			IC_value_show(value.as.object->as.pair.f(IC_world_cons_choice(&w, IC_CAR)), false);
+			printf(" . ");
+			IC_value_show(value.as.object->as.pair.f(IC_world_cons_choice(&w, IC_CDR)), false);
+			printf(")");
 			break;
 		}
+		}
 		break;
+	}
+	if (print_newline) {
+		printf("\n");
 	}
 }
 
