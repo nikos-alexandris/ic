@@ -115,8 +115,10 @@ impl<'src> HtoI<'src> {
             ),
             hir::Expr::Call(name, args, i) => {
                 for (idx, arg) in args.iter().enumerate() {
+                    let curr_actuals_idx = actuals[self.func_idx[name]][idx].len();
+                    actuals[self.func_idx[name]][idx].push(il::Expr::Atom(0)); // TODO: temporary
                     let expr = self.convert_expr(actuals, arg);
-                    actuals[self.func_idx[name]][idx].push(expr);
+                    actuals[self.func_idx[name]][idx][curr_actuals_idx] = expr;
                 }
                 il::Expr::Call(name, *i)
             }

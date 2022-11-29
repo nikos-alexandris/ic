@@ -77,11 +77,10 @@ void IC_value_show(IC_VALUE value, bool print_newline)
 	case IC_VALUE_OBJECT:
 		switch (value.as.object->tag) {
 		case IC_OBJECT_PAIR: {
-			IC_WORLD w = IC_world_drop_choices(&value.as.object->as.pair.world);
 			printf("(");
-			IC_value_show(value.as.object->as.pair.f(IC_world_cons_choice(&w, IC_CAR)), false);
-			printf(" . ");
-			IC_value_show(value.as.object->as.pair.f(IC_world_cons_choice(&w, IC_CDR)), false);
+			IC_value_show(value.as.object->as.pair.f(IC_world_append_choice(&value.as.object->as.pair.world, IC_CAR)), false);
+			printf(", ");
+			IC_value_show(value.as.object->as.pair.f(IC_world_append_choice(&value.as.object->as.pair.world, IC_CDR)), false);
 			printf(")");
 			break;
 		}

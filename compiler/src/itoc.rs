@@ -75,6 +75,7 @@ impl<'src> ItoC<'src> {
             .arg("-o")
             .arg("_build/out")
             .arg("_build/out.c")
+            .arg("-O3")
             .arg("-I")
             .arg(self.ic_home.clone() + "/runtime/include")
             .arg("-L")
@@ -87,6 +88,8 @@ impl<'src> ItoC<'src> {
 
     fn prelude(&mut self) {
         wl!(self, "#include \"value.h\"");
+        wl!(self, "#include <stdio.h>");
+        wl!(self, "#include <time.h>");
         wl!(self, "");
     }
 
@@ -116,7 +119,7 @@ impl<'src> ItoC<'src> {
             wl!(self, "{{");
             indent!(self);
 
-            let res = self.convert_expr(&def.name, &"world", &def.body);
+            let res = self.convert_expr(&def.name, &"world", &"world", &def.body);
 
             wl!(self, "return {};", fmt_tmp!(res));
 
@@ -126,7 +129,13 @@ impl<'src> ItoC<'src> {
         }
     }
 
-    fn convert_expr(&mut self, f: &str, world: &str, expr: &il::Expr<'src>) -> usize {
+    fn convert_expr(
+        &mut self,
+        f: &str,
+        f_world: &str,
+        world: &str,
+        expr: &il::Expr<'src>,
+    ) -> usize {
         match expr {
             il::Expr::Var(name) => {
                 let tmp = gen_tmp!(self);
@@ -145,8 +154,8 @@ impl<'src> ItoC<'src> {
             }
             il::Expr::Add(lhs, rhs) => {
                 let tmp = gen_tmp!(self);
-                let lhs = self.convert_expr(f, world, lhs);
-                let rhs = self.convert_expr(f, world, rhs);
+                let lhs = self.convert_expr(f, f_world, world, lhs);
+                let rhs = self.convert_expr(f, f_world, world, rhs);
                 wl!(
                     self,
                     "IC_VALUE {} = IC_add({}, {});",
@@ -158,8 +167,8 @@ impl<'src> ItoC<'src> {
             }
             il::Expr::Sub(lhs, rhs) => {
                 let tmp = gen_tmp!(self);
-                let lhs = self.convert_expr(f, world, lhs);
-                let rhs = self.convert_expr(f, world, rhs);
+                let lhs = self.convert_expr(f, f_world, world, lhs);
+                let rhs = self.convert_expr(f, f_world, world, rhs);
                 wl!(
                     self,
                     "IC_VALUE {} = IC_sub({}, {});",
@@ -171,8 +180,8 @@ impl<'src> ItoC<'src> {
             }
             il::Expr::Mul(lhs, rhs) => {
                 let tmp = gen_tmp!(self);
-                let lhs = self.convert_expr(f, world, lhs);
-                let rhs = self.convert_expr(f, world, rhs);
+                let lhs = self.convert_expr(f, f_world, world, lhs);
+                let rhs = self.convert_expr(f, f_world, world, rhs);
                 wl!(
                     self,
                     "IC_VALUE {} = IC_mul({}, {});",
@@ -184,8 +193,8 @@ impl<'src> ItoC<'src> {
             }
             il::Expr::Eq(lhs, rhs) => {
                 let tmp = gen_tmp!(self);
-                let lhs = self.convert_expr(f, world, lhs);
-                let rhs = self.convert_expr(f, world, rhs);
+                let lhs = self.convert_expr(f, f_world, world, lhs);
+                let rhs = self.convert_expr(f, f_world, world, rhs);
                 wl!(
                     self,
                     "IC_VALUE {} = IC_eq({}, {});",
@@ -197,8 +206,8 @@ impl<'src> ItoC<'src> {
             }
             il::Expr::Lq(lhs, rhs) => {
                 let tmp = gen_tmp!(self);
-                let lhs = self.convert_expr(f, world, lhs);
-                let rhs = self.convert_expr(f, world, rhs);
+                let lhs = self.convert_expr(f, f_world, world, lhs);
+                let rhs = self.convert_expr(f, f_world, world, rhs);
                 wl!(
                     self,
                     "IC_VALUE {} = IC_lq({}, {});",
@@ -218,7 +227,7 @@ impl<'src> ItoC<'src> {
                 );
 
                 let tmp = gen_tmp!(self);
-                let expr_res = self.convert_expr(f, &fmt_tmp!(tmp_world), expr);
+                let expr_res = self.convert_expr(f, f_world, &fmt_tmp!(tmp_world), expr);
                 wl!(
                     self,
                     "IC_VALUE {} = IC_IS_PAIR({});",
@@ -231,19 +240,19 @@ impl<'src> ItoC<'src> {
                 let tmp = gen_tmp!(self);
                 wl!(self, "IC_VALUE {};", fmt_tmp!(tmp));
 
-                let cond_res = self.convert_expr(f, world, cond);
+                let cond_res = self.convert_expr(f, f_world, world, cond);
                 wl!(self, "if ({}.tag != IC_VALUE_ATOM) {{", fmt_tmp!(cond_res));
                 indent!(self);
                 wl!(self, "IC_runtime_error(\"if condition is not an atom\");");
                 dedent!(self);
                 wl!(self, "}} else if ({}.as.atom == 1) {{", fmt_tmp!(cond_res));
                 indent!(self);
-                let then_res = self.convert_expr(f, world, then);
+                let then_res = self.convert_expr(f, f_world, world, then);
                 wl!(self, "{} = {};", fmt_tmp!(tmp), fmt_tmp!(then_res));
                 dedent!(self);
                 wl!(self, "}} else {{");
                 indent!(self);
-                let els_res = self.convert_expr(f, world, els);
+                let els_res = self.convert_expr(f, f_world, world, els);
                 wl!(self, "{} = {};", fmt_tmp!(tmp), fmt_tmp!(els_res));
                 dedent!(self);
                 wl!(self, "}}");
@@ -266,7 +275,7 @@ impl<'src> ItoC<'src> {
                 wl!(self, "IC_VALUE {};", fmt_tmp!(tmp));
                 wl!(self, "if (!IC_world_has_choices(&{})) {{", world);
                 indent!(self);
-                wl!(self, "{} = IC_pair({}, {});", fmt_tmp!(tmp), world, f);
+                wl!(self, "{} = IC_pair({}, {});", fmt_tmp!(tmp), f_world, f);
                 dedent!(self);
                 wl!(self, "}} else {{");
                 indent!(self);
@@ -282,12 +291,12 @@ impl<'src> ItoC<'src> {
                 );
                 wl!(self, "if ({} == IC_CAR) {{", fmt_tmp!(tmp_choice));
                 indent!(self);
-                let lhs_res = self.convert_expr(f, &fmt_tmp!(tmp_world), lhs);
+                let lhs_res = self.convert_expr(f, f_world, &fmt_tmp!(tmp_world), lhs);
                 wl!(self, "{} = {};", fmt_tmp!(tmp), fmt_tmp!(lhs_res));
                 dedent!(self);
                 wl!(self, "}} else {{");
                 indent!(self);
-                let rhs_res = self.convert_expr(f, &fmt_tmp!(tmp_world), rhs);
+                let rhs_res = self.convert_expr(f, f_world, &fmt_tmp!(tmp_world), rhs);
                 wl!(self, "{} = {};", fmt_tmp!(tmp), fmt_tmp!(rhs_res));
                 dedent!(self);
                 wl!(self, "}}");
@@ -306,7 +315,7 @@ impl<'src> ItoC<'src> {
                     fmt_tmp!(tmp_world),
                     world
                 );
-                let expr_res = self.convert_expr(f, &fmt_tmp!(tmp_world), expr);
+                let expr_res = self.convert_expr(f, f_world, &fmt_tmp!(tmp_world), expr);
                 wl!(self, "{} = {};", fmt_tmp!(tmp), fmt_tmp!(expr_res));
                 tmp
             }
@@ -320,7 +329,7 @@ impl<'src> ItoC<'src> {
                     fmt_tmp!(tmp_world),
                     world
                 );
-                let expr_res = self.convert_expr(f, &fmt_tmp!(tmp_world), expr);
+                let expr_res = self.convert_expr(f, f_world, &fmt_tmp!(tmp_world), expr);
                 wl!(self, "{} = {};", fmt_tmp!(tmp), fmt_tmp!(expr_res));
                 tmp
             }
@@ -341,7 +350,7 @@ impl<'src> ItoC<'src> {
                 for (i, expr) in exprs.iter().enumerate() {
                     wl!(self, "case {}: {{", i);
                     indent!(self);
-                    let expr_res = self.convert_expr(f, &fmt_tmp!(tmp_world), expr);
+                    let expr_res = self.convert_expr(f, f_world, &fmt_tmp!(tmp_world), expr);
                     wl!(self, "{} = {};", fmt_tmp!(tmp), fmt_tmp!(expr_res));
                     wl!(self, "break;");
                     dedent!(self);
@@ -365,8 +374,11 @@ impl<'src> ItoC<'src> {
         indent!(self);
 
         wl!(self, "IC_WORLD world = IC_world_new();");
+        wl!(self, "clock_t start = clock();");
         wl!(self, "IC_VALUE res = result(world);");
         wl!(self, "IC_value_show(res, true);");
+        wl!(self, "clock_t end = clock();");
+        wl!(self, "printf(\"time = %.10f s\\n\", (double)(end - start) / CLOCKS_PER_SEC);");
         wl!(self, "return 0;");
 
         dedent!(self);

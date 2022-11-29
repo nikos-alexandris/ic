@@ -1,5 +1,5 @@
-#ifndef VALUE_H
-#define VALUE_H
+#ifndef IC_VALUE_H
+#define IC_VALUE_H
 
 #include "common.h"
 #include "world.h"
@@ -40,4 +40,4 @@ IC_VALUE IC_eq(IC_VALUE a, IC_VALUE b);
 IC_VALUE IC_lq(IC_VALUE a, IC_VALUE b);
 void IC_value_show(IC_VALUE value, bool print_newline);
 
-#endif /* VALUE_H */
+#endif /* IC_VALUE_H */

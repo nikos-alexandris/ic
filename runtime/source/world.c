@@ -61,6 +61,18 @@ IC_WORLD IC_world_uncons_choice(const IC_WORLD* world, IC_CHOICE* choice)
 	return IC_world_from(world->tags, world->choices->cdr);
 }
 
+IC_WORLD IC_world_append_choice(const IC_WORLD* world, IC_CHOICE choice)
+{
+	if (!world->choices) {
+		return IC_world_cons_choice(world, choice);
+	}
+
+	IC_CHOICE c;
+	IC_WORLD cs = IC_world_uncons_choice(world, &c);
+	IC_WORLD a = IC_world_append_choice(&cs, choice);
+	return IC_world_cons_choice(&a, c);
+}
+
 static IC_WORLD IC_world_from(IC_TAG_LIST* tags, IC_CHOICE_LIST* choices)
 {
 	IC_WORLD world;

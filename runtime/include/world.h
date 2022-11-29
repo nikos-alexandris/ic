@@ -1,5 +1,5 @@
-#ifndef WORLD_H
-#define WORLD_H
+#ifndef IC_WORLD_H
+#define IC_WORLD_H
 
 #include "common.h"
 
@@ -34,4 +34,6 @@ IC_WORLD IC_world_cons_choice(const IC_WORLD* world, IC_CHOICE choice);
 
 IC_WORLD IC_world_uncons_choice(const IC_WORLD* world, IC_CHOICE* choice);
 
-#endif /* WORLD_H */
+IC_WORLD IC_world_append_choice(const IC_WORLD* world, IC_CHOICE choice);
+
+#endif /* IC_WORLD_H */

@@ -1,5 +1,5 @@
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef IC_COMMON_H
+#define IC_COMMON_H
 
 #include <stdint.h>
 
@@ -12,4 +12,4 @@ typedef enum { false, true } bool;
 
 __attribute__((noreturn)) void IC_runtime_error(const char* fmt, ...);
 
-#endif /* COMMON_H */
+#endif /* IC_COMMON_H */

@@ -3,7 +3,6 @@ use std::fs::read_to_string;
 
 pub mod fl;
 mod ftoh;
-pub mod ftoi;
 pub mod hir;
 mod htoi;
 pub mod il;
@@ -35,5 +34,4 @@ fn main() {
 
     let itoc = itoc::ItoC::new(il, ic_home);
     itoc.generate();
-    // println!("{:#?}", il);
 }
