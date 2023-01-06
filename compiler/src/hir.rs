@@ -7,15 +7,26 @@
 // 3: Uses of function local variables and global variables
 //    have been separated.
 
+use std::collections::HashMap;
+
 #[derive(Debug)]
 pub struct Program<'src> {
     pub definitions: Box<[Definition<'src>]>,
+    pub var_indices: HashMap<String, usize>,
     pub atoms: Box<[&'src str]>,
 }
 
 impl<'src> Program<'src> {
-    pub fn new(definitions: Box<[Definition<'src>]>, atoms: Box<[&'src str]>) -> Self {
-        Self { definitions, atoms }
+    pub fn new(
+        definitions: Box<[Definition<'src>]>,
+        var_indices: HashMap<String, usize>,
+        atoms: Box<[&'src str]>,
+    ) -> Self {
+        Self {
+            definitions,
+            var_indices,
+            atoms,
+        }
     }
 }
 
@@ -46,7 +57,7 @@ pub enum Expr<'src> {
     IsPair(Box<Expr<'src>>),
     If(Box<Expr<'src>>, Box<Expr<'src>>, Box<Expr<'src>>),
     Call(&'src str, Box<[Expr<'src>]>, usize),
-    Cons(Box<Expr<'src>>, Box<Expr<'src>>),
+    Cons(Box<Expr<'src>>, Box<Expr<'src>>, usize),
     Car(Box<Expr<'src>>),
     Cdr(Box<Expr<'src>>),
 }

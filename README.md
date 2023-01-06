@@ -21,13 +21,12 @@ The process of compilation is:
 - [X] Transform the HIR to the equivalent intensional program
 - [X] Compile the intensional program to C
 - [X] Don't require the user to compile and link the generated code; do it automatically
+- [ ] Compiler code is 💩 needs cleanup/simplification
 
 ### Runtime
 
-- [X] World modeling and operations
-- [X] Values
-- [ ] Garbage Collection
-- [ ] LAR
+- [X] LARs (Only heap allocated, will change if types are added to the language)
+- [X] Garbage Collection (Currently mark and sweep - pretty slow should be improved)
 
 ## Dependencies
 

@@ -9,6 +9,8 @@ pub struct FtoH<'src> {
     pub globals: HashMap<&'src str, usize>,
     // Maps function definition indexes to the number of times they have been called.
     pub func_calls: HashMap<usize, usize>,
+    pub cons_calls: usize,
+    pub var_indices: HashMap<String, usize>,
     pub atoms_map: HashMap<&'src str, usize>,
     pub atom_names: Vec<&'src str>,
 }
@@ -27,6 +29,8 @@ impl<'src> FtoH<'src> {
             atom_names: vec!["nil", "true", "false"],
             globals: HashMap::new(),
             func_calls: HashMap::new(),
+            var_indices: HashMap::new(),
+            cons_calls: 0,
         }
     }
 
@@ -40,13 +44,21 @@ impl<'src> FtoH<'src> {
         let mut definitions = Vec::new();
         for def in old_definitions.into_iter() {
             let name = def.name;
-            let args = def.args.iter().map(|arg| obf_var!(def.name, arg)).collect();
+            let args = def
+                .args
+                .iter()
+                .map(|arg| obf_var!(def.name, arg))
+                .collect::<Box<[String]>>();
+            args.iter().enumerate().for_each(|(i, arg)| {
+                self.var_indices.insert(arg.clone(), i);
+            });
             let body = self.convert_body(&old_definitions, &def, &def.body)?;
             definitions.push(hir::Definition::new(name, args, body));
         }
 
         Some(hir::Program::new(
             definitions.into_boxed_slice(),
+            self.var_indices,
             self.atom_names.into_boxed_slice(),
         ))
     }
@@ -169,10 +181,15 @@ impl<'src> FtoH<'src> {
                     return None;
                 }
             }
-            fl::Expr::Cons(lhs, rhs) => hir::Expr::Cons(
-                Box::new(self.convert_body(definitions, def, lhs)?),
-                Box::new(self.convert_body(definitions, def, rhs)?),
-            ),
+            fl::Expr::Cons(lhs, rhs) => {
+                let cc = self.cons_calls;
+                self.cons_calls += 1;
+                hir::Expr::Cons(
+                    Box::new(self.convert_body(definitions, def, lhs)?),
+                    Box::new(self.convert_body(definitions, def, rhs)?),
+                    cc,
+                )
+            }
             fl::Expr::Car(expr) => {
                 hir::Expr::Car(Box::new(self.convert_body(definitions, def, expr)?))
             }

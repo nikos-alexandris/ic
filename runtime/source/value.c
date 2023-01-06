@@ -1,22 +1,8 @@
 #include "value.h"
 
-#include <malloc.h>
 #include <stdio.h>
 
 static const char* IC_value_show_type(IC_VALUE value);
-
-IC_VALUE IC_pair(IC_WORLD world, IC_VALUE (*f)(IC_WORLD))
-{
-	IC_OBJECT* object = malloc(sizeof(*object));
-	if (!object) {
-		IC_runtime_error("out of memory", 0);
-	}
-	object->tag = IC_OBJECT_PAIR;
-	object->as.pair.f = f;
-	object->as.pair.world = world;
-
-	return (IC_VALUE){IC_VALUE_OBJECT, {.object = object}};
-}
 
 IC_VALUE IC_add(IC_VALUE a, IC_VALUE b)
 {
@@ -65,27 +51,41 @@ IC_VALUE IC_lq(IC_VALUE a, IC_VALUE b)
 	}
 }
 
+IC_VALUE IC_car(IC_VALUE v)
+{
+	if (v.tag != IC_VALUE_PAIR) {
+		IC_runtime_error("cannot use 'car' on %s", IC_value_show_type(v));
+	}
+	return IC_lar_get_arg(v.as.pair, 0);
+}
+
+IC_VALUE IC_cdr(IC_VALUE v)
+{
+	if (v.tag != IC_VALUE_PAIR) {
+		IC_runtime_error("cannot use 'cdr' on %s", IC_value_show_type(v));
+	}
+	return IC_lar_get_arg(v.as.pair, 1);
+}
+
 void IC_value_show(IC_VALUE value, bool print_newline)
 {
 	switch (value.tag) {
-	case IC_VALUE_INTEGER:
+	case IC_VALUE_INTEGER: {
 		printf("%ld", value.as.integer);
 		break;
-	case IC_VALUE_ATOM:
+	}
+	case IC_VALUE_ATOM: {
 		printf("'%s", IC_atom_names[value.as.atom]);
 		break;
-	case IC_VALUE_OBJECT:
-		switch (value.as.object->tag) {
-		case IC_OBJECT_PAIR: {
-			printf("(");
-			IC_value_show(value.as.object->as.pair.f(IC_world_append_choice(&value.as.object->as.pair.world, IC_CAR)), false);
-			printf(", ");
-			IC_value_show(value.as.object->as.pair.f(IC_world_append_choice(&value.as.object->as.pair.world, IC_CDR)), false);
-			printf(")");
-			break;
-		}
-		}
+	}
+	case IC_VALUE_PAIR: {
+		printf("(");
+		IC_value_show(IC_lar_get_arg(value.as.pair, 0), false);
+		printf(" . ");
+		IC_value_show(IC_lar_get_arg(value.as.pair, 1), false);
+		printf(")");
 		break;
+	}
 	}
 	if (print_newline) {
 		printf("\n");
@@ -99,8 +99,8 @@ static const char* IC_value_show_type(IC_VALUE value)
 		return "integer";
 	case IC_VALUE_ATOM:
 		return "atom";
-	case IC_VALUE_OBJECT:
-		return "object";
+	case IC_VALUE_PAIR:
+		return "pair";
 	default:
 		IC_runtime_error("unknown value type", 0);
 	}

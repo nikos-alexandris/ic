@@ -1,24 +1,42 @@
+use std::collections::HashMap;
+
 #[derive(Debug)]
 pub struct Program<'src> {
     pub definitions: Box<[Definition<'src>]>,
+    pub var_indices: HashMap<String, usize>,
     pub atoms: Box<[&'src str]>,
 }
 
 impl<'src> Program<'src> {
-    pub fn new(definitions: Box<[Definition<'src>]>, atoms: Box<[&'src str]>) -> Self {
-        Self { definitions, atoms }
+    pub fn new(
+        definitions: Box<[Definition<'src>]>,
+        var_indices: HashMap<String, usize>,
+        atoms: Box<[&'src str]>,
+    ) -> Self {
+        Self {
+            definitions,
+            var_indices,
+            atoms,
+        }
     }
 }
 
 #[derive(Debug)]
 pub struct Definition<'src> {
     pub name: String,
+    pub args: Box<[String]>, // We need this field for generating the lars
     pub body: Expr<'src>,
+    pub is_function: bool,
 }
 
 impl<'src> Definition<'src> {
-    pub fn new(name: String, body: Expr<'src>) -> Self {
-        Self { name, body }
+    pub fn new(name: String, args: Box<[String]>, body: Expr<'src>, is_function: bool) -> Self {
+        Self {
+            name,
+            args,
+            body,
+            is_function,
+        }
     }
 }
 
@@ -35,8 +53,7 @@ pub enum Expr<'src> {
     IsPair(Box<Expr<'src>>),
     If(Box<Expr<'src>>, Box<Expr<'src>>, Box<Expr<'src>>),
     Call(&'src str, usize),
-    Cons(Box<Expr<'src>>, Box<Expr<'src>>),
+    Cons(usize),
     Car(Box<Expr<'src>>),
     Cdr(Box<Expr<'src>>),
-    Actuals(Box<[Expr<'src>]>),
 }

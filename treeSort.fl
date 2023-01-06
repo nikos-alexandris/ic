@@ -1,6 +1,6 @@
 result = treeSort(list)
 
-list = cons(3, cons(5, cons(1, cons(2, cons(4, 'nil)))))
+list = cons(3, cons(5, cons(1, cons(2, cons(4, cons(6, cons(10, cons(3, cons(9, cons(15, cons(13, 'nil)))))))))))
 
 treeSort(l) = 
     treeToList(treeFromList(l))

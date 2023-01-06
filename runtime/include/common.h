@@ -4,9 +4,8 @@
 #include <stdint.h>
 
 typedef uint8_t u8;
+typedef uint32_t u32;
 typedef uintptr_t usize;
-
-typedef int64_t i64;
 
 typedef enum { false, true } bool;
 

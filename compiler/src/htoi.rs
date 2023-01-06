@@ -18,6 +18,7 @@ impl<'src> HtoI<'src> {
 
     pub fn convert(mut self) -> il::Program<'src> {
         let mut actuals = self.make_indices();
+        let mut conses = Vec::new();
 
         let mut definitions = self
             .program
@@ -26,14 +27,21 @@ impl<'src> HtoI<'src> {
             .map(|def| {
                 il::Definition::new(
                     def.name.to_string(),
-                    self.convert_expr(&mut actuals, &def.body),
+                    def.args.clone(),
+                    self.convert_expr(&mut actuals, &mut conses, &def.body),
+                    true,
                 )
             })
             .collect();
 
         self.make_actuals(&mut actuals, &mut definitions);
+        self.make_conses(&mut conses, &mut definitions);
 
-        il::Program::new(definitions.into_boxed_slice(), self.program.atoms)
+        il::Program::new(
+            definitions.into_boxed_slice(),
+            self.program.var_indices,
+            self.program.atoms,
+        )
     }
 
     fn make_indices(&mut self) -> Vec<Vec<Vec<il::Expr<'src>>>> {
@@ -67,67 +75,104 @@ impl<'src> HtoI<'src> {
             .zip(actuals.into_iter())
             .for_each(|(def, actuals)| {
                 for (j, arg) in def.args.iter().enumerate() {
-                    definitions.push(il::Definition::new(
-                        arg.to_string(),
-                        il::Expr::Actuals(
-                            std::mem::replace(&mut actuals[j], Vec::new()).into_boxed_slice(),
-                        ),
-                    ));
+                    let actuals = std::mem::replace(&mut actuals[j], Vec::new());
+                    for (i, actual) in actuals.into_iter().enumerate() {
+                        definitions.push(il::Definition::new(
+                            format!("{}_{}", arg, i),
+                            def.args.clone(),
+                            actual,
+                            false,
+                        ));
+                    }
                 }
             });
+    }
+
+    fn make_conses(
+        &mut self,
+        conses: &mut Vec<(il::Expr<'src>, il::Expr<'src>)>,
+        definitions: &mut Vec<il::Definition<'src>>,
+    ) {
+        let conses = std::mem::replace(conses, Vec::new());
+        for (i, (car, cdr)) in conses.into_iter().enumerate() {
+            definitions.push(il::Definition::new(
+                format!("__car_{}", i),
+                Vec::new().into_boxed_slice(),
+                car,
+                false,
+            ));
+            definitions.push(il::Definition::new(
+                format!("__cdr_{}", i),
+                Vec::new().into_boxed_slice(),
+                cdr,
+                false,
+            ));
+        }
     }
 
     fn convert_expr(
         &self,
         actuals: &mut Vec<Vec<Vec<il::Expr<'src>>>>,
+        conses: &mut Vec<(il::Expr<'src>, il::Expr<'src>)>,
         expr: &hir::Expr<'src>,
     ) -> il::Expr<'src> {
         match expr {
             hir::Expr::Local(name) => il::Expr::Var(name.clone()),
-            hir::Expr::Global(name) => il::Expr::Var(name.to_string()),
+            // We always plug in 0, doesn't matter...
+            hir::Expr::Global(name) => il::Expr::Call(name, 0),
             hir::Expr::Atom(index) => il::Expr::Atom(*index),
             hir::Expr::Num(num) => il::Expr::Num(*num),
             hir::Expr::Add(left, right) => il::Expr::Add(
-                Box::new(self.convert_expr(actuals, left)),
-                Box::new(self.convert_expr(actuals, right)),
+                Box::new(self.convert_expr(actuals, conses, left)),
+                Box::new(self.convert_expr(actuals, conses, right)),
             ),
             hir::Expr::Sub(left, right) => il::Expr::Sub(
-                Box::new(self.convert_expr(actuals, left)),
-                Box::new(self.convert_expr(actuals, right)),
+                Box::new(self.convert_expr(actuals, conses, left)),
+                Box::new(self.convert_expr(actuals, conses, right)),
             ),
             hir::Expr::Mul(left, right) => il::Expr::Mul(
-                Box::new(self.convert_expr(actuals, left)),
-                Box::new(self.convert_expr(actuals, right)),
+                Box::new(self.convert_expr(actuals, conses, left)),
+                Box::new(self.convert_expr(actuals, conses, right)),
             ),
             hir::Expr::Eq(left, right) => il::Expr::Eq(
-                Box::new(self.convert_expr(actuals, left)),
-                Box::new(self.convert_expr(actuals, right)),
+                Box::new(self.convert_expr(actuals, conses, left)),
+                Box::new(self.convert_expr(actuals, conses, right)),
             ),
             hir::Expr::Lq(left, right) => il::Expr::Lq(
-                Box::new(self.convert_expr(actuals, left)),
-                Box::new(self.convert_expr(actuals, right)),
+                Box::new(self.convert_expr(actuals, conses, left)),
+                Box::new(self.convert_expr(actuals, conses, right)),
             ),
-            hir::Expr::IsPair(expr) => il::Expr::IsPair(Box::new(self.convert_expr(actuals, expr))),
+            hir::Expr::IsPair(expr) => {
+                il::Expr::IsPair(Box::new(self.convert_expr(actuals, conses, expr)))
+            }
             hir::Expr::If(cond, then, els) => il::Expr::If(
-                Box::new(self.convert_expr(actuals, cond)),
-                Box::new(self.convert_expr(actuals, then)),
-                Box::new(self.convert_expr(actuals, els)),
+                Box::new(self.convert_expr(actuals, conses, cond)),
+                Box::new(self.convert_expr(actuals, conses, then)),
+                Box::new(self.convert_expr(actuals, conses, els)),
             ),
             hir::Expr::Call(name, args, i) => {
                 for (idx, arg) in args.iter().enumerate() {
                     let curr_actuals_idx = actuals[self.func_idx[name]][idx].len();
                     actuals[self.func_idx[name]][idx].push(il::Expr::Atom(0)); // TODO: temporary
-                    let expr = self.convert_expr(actuals, arg);
+                    let expr = self.convert_expr(actuals, conses, arg);
                     actuals[self.func_idx[name]][idx][curr_actuals_idx] = expr;
                 }
                 il::Expr::Call(name, *i)
             }
-            hir::Expr::Cons(left, right) => il::Expr::Cons(
-                Box::new(self.convert_expr(actuals, left)),
-                Box::new(self.convert_expr(actuals, right)),
-            ),
-            hir::Expr::Car(expr) => il::Expr::Car(Box::new(self.convert_expr(actuals, expr))),
-            hir::Expr::Cdr(expr) => il::Expr::Cdr(Box::new(self.convert_expr(actuals, expr))),
+            hir::Expr::Cons(left, right, i) => {
+                let curr_conses_idx = conses.len();
+                conses.push((il::Expr::Atom(0), il::Expr::Atom(0))); // TODO: temporary
+                let left = self.convert_expr(actuals, conses, left);
+                let right = self.convert_expr(actuals, conses, right);
+                conses[curr_conses_idx] = (left, right);
+                il::Expr::Cons(*i)
+            }
+            hir::Expr::Car(expr) => {
+                il::Expr::Car(Box::new(self.convert_expr(actuals, conses, expr)))
+            }
+            hir::Expr::Cdr(expr) => {
+                il::Expr::Cdr(Box::new(self.convert_expr(actuals, conses, expr)))
+            }
         }
     }
 }
