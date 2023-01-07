@@ -22,7 +22,7 @@ typedef IC_VALUE (*IC_LARF)(IC_LAR_PROTO*);
 #define IC_LAR_VALUE(_lar, _i)                                                                                         \
 	*(IC_VALUE*)((u8*)(_lar) + sizeof(IC_LAR_PROTO) + _lar->num_of_args * sizeof(IC_LARF) + _i * sizeof(IC_VALUE))
 
-IC_LAR_PROTO* IC_lar_new(IC_LAR_PROTO* parent, u32 num_of_args, ...);
+IC_LAR_PROTO* IC_lar_new(IC_LAR_PROTO* parent, u8 num_of_args, IC_LARF* args);
 
 IC_VALUE IC_lar_get_arg(IC_LAR_PROTO* lar, u32 arg);
 

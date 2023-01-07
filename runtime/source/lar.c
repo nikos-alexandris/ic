@@ -1,7 +1,6 @@
 #include "value.h"
 
 #include <malloc.h>
-#include <stdarg.h>
 #include <time.h>
 
 #define IC_GC_LIMIT 4194304
@@ -20,10 +19,8 @@ static usize IC_alloc_size = 0;
 static void IC_gc(void);
 static void IC_mark(IC_LAR_PROTO* lar);
 
-IC_LAR_PROTO* IC_lar_new(IC_LAR_PROTO* parent, u32 num_of_args, ...)
+IC_LAR_PROTO* IC_lar_new(IC_LAR_PROTO* parent, u8 num_of_args, IC_LARF* args)
 {
-	// TODO check num_of_args <= 255
-
 	usize size = sizeof(IC_LAR_PROTO) + num_of_args * sizeof(IC_LARF) + num_of_args * sizeof(IC_VALUE);
 	IC_LAR_PROTO* lar = (IC_LAR_PROTO*)malloc(size);
 	IC_alloc_size += malloc_usable_size(lar);
@@ -35,15 +32,14 @@ IC_LAR_PROTO* IC_lar_new(IC_LAR_PROTO* parent, u32 num_of_args, ...)
 	}
 
 	lar->parent = parent;
-	lar->num_of_args = (u8)num_of_args;
+	lar->num_of_args = num_of_args;
 	lar->in_stack = 0;
 	lar->marked = 0;
-	va_list args;
-	va_start(args, num_of_args);
-	for (u8 i = 0; i < lar->num_of_args; i++) {
-		IC_LAR_THUNK(lar, i) = va_arg(args, IC_LARF);
+
+	for (u8 i = 0; i < num_of_args; i++) {
+		IC_LAR_THUNK(lar, i) = args[i];
 	}
-	va_end(args);
+
 	lar->gc_next = IC_gc_first;
 	IC_gc_first = lar;
 	return lar;

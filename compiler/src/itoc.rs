@@ -279,23 +279,25 @@ impl<'src> ItoC<'src> {
                 let def = defs.iter().find(|d| d.name == *callee).unwrap();
                 w!(
                     self,
-                    "IC_VALUE {} = {}(IC_lar_new(lar, {}",
+                    "IC_VALUE {} = {}(IC_lar_new(lar, {}, (IC_LARF[]){{",
                     fmt_tmp!(tmp),
                     callee,
                     def.args.len()
                 );
-                for arg in def.args.iter() {
-                    write!(self.out, ", ").unwrap();
+                for (idx, arg) in def.args.iter().enumerate() {
                     write!(self.out, "{}_{}", arg, i).unwrap();
+                    if idx < def.args.len() - 1 {
+                        write!(self.out, ", ").unwrap();
+                    }
                 }
-                writeln!(self.out, "));").unwrap();
+                writeln!(self.out, "}}));").unwrap();
                 tmp
             }
             il::Expr::Cons(i) => {
                 let tmp = gen_tmp!(self);
                 wl!(
                     self,
-                    "IC_VALUE {} = IC_PAIR(IC_lar_new(lar, 2, __car_{}, __cdr_{}));",
+                    "IC_VALUE {} = IC_PAIR(IC_lar_new(lar, 2, (IC_LARF[]){{__car_{}, __cdr_{}}}));",
                     fmt_tmp!(tmp),
                     i,
                     i
@@ -336,10 +338,16 @@ impl<'src> ItoC<'src> {
         wl!(self, "clock_t t1, t2;");
         wl!(self, "t1 = clock();");
 
-        wl!(self, "IC_LAR_PROTO* lar = IC_lar_new(NULL, 1, NULL);");
+        wl!(
+            self,
+            "IC_LAR_PROTO* lar = IC_lar_new(NULL, 1, (IC_LARF[]){{NULL}});"
+        );
         wl!(self, "IC_LAR_VALUE(lar, 0) = IC_ATOM(0);");
         wl!(self, "IC_FUNCTION_PUSH(lar);");
-        wl!(self, "IC_VALUE res = result(IC_lar_new(lar, 0));");
+        wl!(
+            self,
+            "IC_VALUE res = result(IC_lar_new(lar, 0, (IC_LARF[]){{}}));"
+        );
         wl!(self, "IC_LAR_VALUE(lar, 0) = res;");
         wl!(self, "IC_value_show(res, true);");
         wl!(self, "IC_FUNCTION_POP(lar);");
