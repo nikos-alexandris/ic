@@ -92,3 +92,5 @@ Creates a `_build` subdirectory in the current directory with the generated exec
 ```bash
 _build/out
 ```
+
+There are program examples in the `examples/fl` directory.
