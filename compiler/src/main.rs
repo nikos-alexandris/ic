@@ -2,6 +2,7 @@
 
 use std::env;
 use std::fs::read_to_string;
+use std::process::ExitCode;
 
 pub mod fl;
 mod ftoh;
@@ -14,26 +15,50 @@ pub mod loc;
 pub mod parser;
 pub mod token;
 
-fn main() {
-    let args = std::env::args().collect::<Vec<String>>();
+fn main() -> ExitCode {
+    env::set_var("RUST_BACKTRACE", "1");
+    env::set_var("RUST_LIB_BACKTRACE", "0");
+
+    let args = env::args().collect::<Box<[String]>>();
+
     if args.len() != 2 {
-        panic!("Usage: ic <source file>");
+        eprintln!("Source file required");
+        return ExitCode::FAILURE;
     }
 
     let ic_home = match env::var("IC_HOME") {
-        Ok(val) => val,
-        Err(_) => panic!("IC_HOME environment variable not set"),
+        Ok(ic_home) => ic_home,
+        Err(e) => {
+            eprintln!("Can't get environment variable IC_HOME: {}", e);
+            return ExitCode::FAILURE;
+        }
     };
 
-    let source = read_to_string(&args[1]).unwrap();
+    let source = match read_to_string(&args[1]) {
+        Ok(source) => source,
+        Err(e) => {
+            eprintln!("Failed to read source file {}: {}", &args[1], e);
+            return ExitCode::FAILURE;
+        }
+    };
+
     let lexer = lexer::Lexer::new(&source);
+
     let mut parser = parser::Parser::new(lexer);
-    let fp = parser.parse().unwrap();
+    let Some(fp) = parser.parse() else {
+        return ExitCode::FAILURE;
+    };
+
     let ftoh = ftoh::FtoH::new(fp);
-    let hir = ftoh.convert().unwrap();
+    let Some(hir) = ftoh.convert() else {
+        return ExitCode::FAILURE;
+    };
+
     let htoi = htoi::HtoI::new(hir);
     let il = htoi.convert();
 
     let itoc = itoc::ItoC::new(il, ic_home);
     itoc.generate();
+
+    ExitCode::SUCCESS
 }

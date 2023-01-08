@@ -27,12 +27,12 @@ treeFromList(l) =
 
 treeInsert(x, t) =
     if isNode(t) then
-        if lq?(x, nodeData(t)) then
+        if x <= nodeData(t) then
             makeNode(nodeData(t), treeInsert(x, nodeLeft(t)), nodeRight(t))
         else
             makeNode(nodeData(t), nodeLeft(t), treeInsert(x, nodeRight(t)))
     else if isLeaf(t) then
-        if lq?(x, leafData(t)) then
+        if x <= leafData(t) then
             makeNode(leafData(t), makeLeaf(x), 'empty)
         else
             makeNode(leafData(t), 'empty, makeLeaf(x))
@@ -44,7 +44,7 @@ nodeLeft(t) = car(cdr(cdr(t)))
 nodeData(n) = car(cdr(n))
 isNode(x) =
     if pair?(x) then
-        eq?(car(x), 'node)
+        car(x) == 'node
     else
         'false
 makeNode(x, l, r) = cons('node, cons(x, cons(l, r)))
@@ -52,7 +52,7 @@ makeNode(x, l, r) = cons('node, cons(x, cons(l, r)))
 leafData(l) = cdr(l)
 isLeaf(x) =
     if pair?(x) then
-        eq?(car(x), 'leaf)
+        car(x) == 'leaf
     else
         'false
 makeLeaf(x) = cons('leaf, x)

@@ -1,3 +1,0 @@
-result = fib(30)
-
-fib(n) = if lq?(n, 2) then 1 else add(fib(sub(n, 1)), fib(sub(n, 2)))

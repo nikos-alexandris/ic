@@ -140,7 +140,23 @@ impl<'src> FtoH<'src> {
                 Box::new(self.convert_body(definitions, def, lhs)?),
                 Box::new(self.convert_body(definitions, def, rhs)?),
             ),
-            fl::Expr::Lq(lhs, rhs) => hir::Expr::Lq(
+            fl::Expr::Neq(lhs, rhs) => hir::Expr::Neq(
+                Box::new(self.convert_body(definitions, def, lhs)?),
+                Box::new(self.convert_body(definitions, def, rhs)?),
+            ),
+            fl::Expr::Lt(lhs, rhs) => hir::Expr::Lt(
+                Box::new(self.convert_body(definitions, def, lhs)?),
+                Box::new(self.convert_body(definitions, def, rhs)?),
+            ),
+            fl::Expr::Le(lhs, rhs) => hir::Expr::Le(
+                Box::new(self.convert_body(definitions, def, lhs)?),
+                Box::new(self.convert_body(definitions, def, rhs)?),
+            ),
+            fl::Expr::Gt(lhs, rhs) => hir::Expr::Gt(
+                Box::new(self.convert_body(definitions, def, lhs)?),
+                Box::new(self.convert_body(definitions, def, rhs)?),
+            ),
+            fl::Expr::Ge(lhs, rhs) => hir::Expr::Ge(
                 Box::new(self.convert_body(definitions, def, lhs)?),
                 Box::new(self.convert_body(definitions, def, rhs)?),
             ),

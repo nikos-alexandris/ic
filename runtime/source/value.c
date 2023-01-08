@@ -38,16 +38,54 @@ IC_VALUE IC_eq(IC_VALUE a, IC_VALUE b)
 	} else if (a.tag == IC_VALUE_ATOM && b.tag == IC_VALUE_ATOM) {
 		return a.as.atom == b.as.atom ? IC_ATOM(1) : IC_ATOM(2);
 	} else {
+		return IC_ATOM(2);
+	}
+}
+
+IC_VALUE IC_neq(IC_VALUE a, IC_VALUE b)
+{
+	if (a.tag == IC_VALUE_INTEGER && b.tag == IC_VALUE_INTEGER) {
+		return a.as.integer != b.as.integer ? IC_ATOM(1) : IC_ATOM(2);
+	} else if (a.tag == IC_VALUE_ATOM && b.tag == IC_VALUE_ATOM) {
+		return a.as.atom != b.as.atom ? IC_ATOM(1) : IC_ATOM(2);
+	} else {
+		return IC_ATOM(1);
+	}
+}
+
+IC_VALUE IC_lt(IC_VALUE a, IC_VALUE b)
+{
+	if (a.tag == IC_VALUE_INTEGER && b.tag == IC_VALUE_INTEGER) {
+		return a.as.integer < b.as.integer ? IC_ATOM(1) : IC_ATOM(2);
+	} else {
 		IC_runtime_error("cannot compare %s and %s", IC_value_show_type(a), IC_value_show_type(b));
 	}
 }
 
-IC_VALUE IC_lq(IC_VALUE a, IC_VALUE b)
+IC_VALUE IC_gt(IC_VALUE a, IC_VALUE b)
+{
+	if (a.tag == IC_VALUE_INTEGER && b.tag == IC_VALUE_INTEGER) {
+		return a.as.integer > b.as.integer ? IC_ATOM(1) : IC_ATOM(2);
+	} else {
+		IC_runtime_error("cannot compare %s and %s", IC_value_show_type(a), IC_value_show_type(b));
+	}
+}
+
+IC_VALUE IC_le(IC_VALUE a, IC_VALUE b)
 {
 	if (a.tag == IC_VALUE_INTEGER && b.tag == IC_VALUE_INTEGER) {
 		return a.as.integer <= b.as.integer ? IC_ATOM(1) : IC_ATOM(2);
 	} else {
 		IC_runtime_error("cannot use 'lq?' on %s and %s", IC_value_show_type(a), IC_value_show_type(b));
+	}
+}
+
+IC_VALUE IC_ge(IC_VALUE a, IC_VALUE b)
+{
+	if (a.tag == IC_VALUE_INTEGER && b.tag == IC_VALUE_INTEGER) {
+		return a.as.integer >= b.as.integer ? IC_ATOM(1) : IC_ATOM(2);
+	} else {
+		IC_runtime_error("cannot use 'gq?' on %s and %s", IC_value_show_type(a), IC_value_show_type(b));
 	}
 }
 

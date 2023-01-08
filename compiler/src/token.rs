@@ -19,12 +19,7 @@ pub enum TokenKind<'src> {
     Cons,  // cons
     Car,   // car
     Cdr,   // cdr
-    EqQ,   // eq?
-    LqQ,  // lq?
     PairQ, // pair?
-    Add,   // add
-    Sub,   // sub
-    Mul,   // mul
     If,    // if
     Then,  // then
     Else,  //else
@@ -34,6 +29,17 @@ pub enum TokenKind<'src> {
     RParen, // )
     Comma,  // ,
     Equals, // =
+
+    // Infix Operators
+    Add, // +
+    Sub, // -
+    Mul, // *
+    Eq,  // ==
+    Neq, // !=
+    Lt,  // <
+    Gt,  // >
+    Le,  // <=
+    Ge,  // >=
 
     // Literals
     Num(i64),        // [1-9][0-9]*
@@ -46,15 +52,19 @@ pub enum TokenKind<'src> {
 impl<'src> Display for TokenKind<'src> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            TokenKind::Cons => write!(f, "'cons'"),
             TokenKind::Car => write!(f, "'car'"),
             TokenKind::Cdr => write!(f, "'cdr'"),
-            TokenKind::EqQ => write!(f, "'eq?'"),
-            TokenKind::LqQ => write!(f, "'lq?'"),
             TokenKind::PairQ => write!(f, "'pair?'"),
-            TokenKind::Add => write!(f, "'add'"),
-            TokenKind::Sub => write!(f, "'sub'"),
-            TokenKind::Mul => write!(f, "'mul'"),
+            TokenKind::Cons => write!(f, "':'"),
+            TokenKind::Add => write!(f, "'+'"),
+            TokenKind::Sub => write!(f, "'-'"),
+            TokenKind::Mul => write!(f, "'*'"),
+            TokenKind::Eq => write!(f, "'=='"),
+            TokenKind::Neq => write!(f, "'!='"),
+            TokenKind::Lt => write!(f, "'<'"),
+            TokenKind::Gt => write!(f, "'>'"),
+            TokenKind::Le => write!(f, "'<='"),
+            TokenKind::Ge => write!(f, "'>='"),
             TokenKind::If => write!(f, "'if'"),
             TokenKind::Then => write!(f, "'then'"),
             TokenKind::Else => write!(f, "'else'"),

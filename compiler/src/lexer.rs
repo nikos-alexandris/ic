@@ -19,12 +19,7 @@ static KEYWORDS: phf::Map<&'static str, TokenKind> = phf_map! {
     "cons" => TokenKind::Cons,
     "car" => TokenKind::Car,
     "cdr" => TokenKind::Cdr,
-    "eq?" => TokenKind::EqQ,
-    "lq?" => TokenKind::LqQ,
     "pair?" => TokenKind::PairQ,
-    "add" => TokenKind::Add,
-    "sub" => TokenKind::Sub,
-    "mul" => TokenKind::Mul,
     "if" => TokenKind::If,
     "then" => TokenKind::Then,
     "else" => TokenKind::Else,
@@ -57,7 +52,38 @@ impl<'src> Lexer<'src> {
             '(' => Some(self.make_single(TokenKind::LParen)),
             ')' => Some(self.make_single(TokenKind::RParen)),
             ',' => Some(self.make_single(TokenKind::Comma)),
-            '=' => Some(self.make_single(TokenKind::Equals)),
+            '+' => Some(self.make_single(TokenKind::Add)),
+            '-' => Some(self.make_single(TokenKind::Sub)),
+            '*' => Some(self.make_single(TokenKind::Mul)),
+            '=' => {
+                if self.second() == '=' {
+                    Some(self.make_double(TokenKind::Eq))
+                } else {
+                    Some(self.make_single(TokenKind::Equals))
+                }
+            }
+            '!' => {
+                if self.second() == '=' {
+                    Some(self.make_double(TokenKind::Neq))
+                } else {
+                    self.error(&format!("Unexpected character: {}", c));
+                    None
+                }
+            }
+            '<' => {
+                if self.second() == '=' {
+                    Some(self.make_double(TokenKind::Le))
+                } else {
+                    Some(self.make_single(TokenKind::Lt))
+                }
+            }
+            '>' => {
+                if self.second() == '=' {
+                    Some(self.make_double(TokenKind::Ge))
+                } else {
+                    Some(self.make_single(TokenKind::Gt))
+                }
+            }
             _ => {
                 self.error(&format!("Unexpected character: {}", c));
                 None
@@ -143,6 +169,12 @@ impl<'src> Lexer<'src> {
         self.make_tok(kind)
     }
 
+    fn make_double(&mut self, kind: TokenKind<'src>) -> Token<'src> {
+        self.advance();
+        self.advance();
+        self.make_tok(kind)
+    }
+
     fn make_tok(&mut self, kind: TokenKind<'src>) -> Token<'src> {
         Token::new(kind, self.start_location)
     }
@@ -153,8 +185,14 @@ impl<'src> Lexer<'src> {
         }
     }
 
-    fn first(&mut self) -> char {
+    fn first(&self) -> char {
         self.chars.clone().next().unwrap_or(EOF_CHAR)
+    }
+
+    fn second(&self) -> char {
+        let mut iter = self.chars.clone();
+        iter.next();
+        iter.next().unwrap_or(EOF_CHAR)
     }
 
     fn advance(&mut self) {

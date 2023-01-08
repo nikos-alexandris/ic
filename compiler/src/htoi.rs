@@ -138,7 +138,23 @@ impl<'src> HtoI<'src> {
                 Box::new(self.convert_expr(actuals, conses, left)),
                 Box::new(self.convert_expr(actuals, conses, right)),
             ),
-            hir::Expr::Lq(left, right) => il::Expr::Lq(
+            hir::Expr::Neq(left, right) => il::Expr::Neq(
+                Box::new(self.convert_expr(actuals, conses, left)),
+                Box::new(self.convert_expr(actuals, conses, right)),
+            ),
+            hir::Expr::Lt(left, right) => il::Expr::Lt(
+                Box::new(self.convert_expr(actuals, conses, left)),
+                Box::new(self.convert_expr(actuals, conses, right)),
+            ),
+            hir::Expr::Gt(left, right) => il::Expr::Gt(
+                Box::new(self.convert_expr(actuals, conses, left)),
+                Box::new(self.convert_expr(actuals, conses, right)),
+            ),
+            hir::Expr::Le(left, right) => il::Expr::Le(
+                Box::new(self.convert_expr(actuals, conses, left)),
+                Box::new(self.convert_expr(actuals, conses, right)),
+            ),
+            hir::Expr::Ge(left, right) => il::Expr::Ge(
                 Box::new(self.convert_expr(actuals, conses, left)),
                 Box::new(self.convert_expr(actuals, conses, right)),
             ),

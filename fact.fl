@@ -1,3 +1,0 @@
-result = fact(15)
-
-fact(n) = if eq?(n, 1) then 1 else mul(n, fact(sub(n, 1)))

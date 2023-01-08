@@ -12,6 +12,12 @@ pub struct Parser<'src> {
     curr: Token<'src>,
 }
 
+#[derive(PartialEq)]
+enum Assoc {
+    Left,
+    _Right,
+}
+
 impl<'src> Parser<'src> {
     pub fn new(lexer: Lexer<'src>) -> Self {
         Self {
@@ -37,12 +43,8 @@ impl<'src> Parser<'src> {
         match self.curr.kind {
             TokenKind::Equals => {
                 self.advance()?;
-                let expr = self.parse_expr()?;
-                Some(fl::Definition::new(
-                    name,
-                    Vec::new().into_boxed_slice(),
-                    expr,
-                ))
+                let expr = self.parse_expr(0)?;
+                Some(fl::Definition::new(name, Box::new([]), expr))
             }
             TokenKind::LParen => {
                 self.advance()?;
@@ -70,7 +72,7 @@ impl<'src> Parser<'src> {
 
                 self.expect(TokenKind::Equals)?;
 
-                let expr = self.parse_expr()?;
+                let expr = self.parse_expr(0)?;
 
                 Some(fl::Definition::new(name, args.into_boxed_slice(), expr))
             }
@@ -81,15 +83,29 @@ impl<'src> Parser<'src> {
         }
     }
 
-    fn parse_expr(&mut self) -> Option<fl::Expr<'src>> {
-        match self.curr.kind {
-            TokenKind::Var(v) => {
+    fn parse_expr(&mut self, min_prec: u8) -> Option<fl::Expr<'src>> {
+        let mut lhs = match self.curr.kind {
+            TokenKind::LParen => {
+                self.advance()?;
+                let expr = self.parse_expr(0)?;
+                self.expect(TokenKind::RParen)?;
+                expr
+            }
+            TokenKind::Atom(name) => {
+                self.advance()?;
+                fl::Expr::Atom(name)
+            }
+            TokenKind::Num(num) => {
+                self.advance()?;
+                fl::Expr::Num(num)
+            }
+            TokenKind::Var(name) => {
                 self.advance()?;
                 if self.curr.kind == TokenKind::LParen {
                     self.advance()?;
                     let mut args = Vec::new();
                     while !self.lexer.is_eof() {
-                        let arg = self.parse_expr()?;
+                        let arg = self.parse_expr(0)?;
                         args.push(arg);
 
                         if self.curr.kind == TokenKind::RParen {
@@ -103,113 +119,116 @@ impl<'src> Parser<'src> {
 
                     self.expect(TokenKind::RParen)?;
 
-                    Some(fl::Expr::Call(v, args.into_boxed_slice()))
+                    fl::Expr::Call(name, args.into_boxed_slice())
                 } else {
-                    Some(fl::Expr::Var(v))
+                    fl::Expr::Var(name)
                 }
-            }
-            TokenKind::Atom(a) => {
-                self.advance()?;
-                Some(fl::Expr::Atom(a))
-            }
-            TokenKind::Num(n) => {
-                self.advance()?;
-                Some(fl::Expr::Num(n))
-            }
-            TokenKind::Add => {
-                self.advance()?;
-                self.expect(TokenKind::LParen)?;
-                let lhs = self.parse_expr()?;
-                self.expect(TokenKind::Comma)?;
-                let rhs = self.parse_expr()?;
-                self.expect(TokenKind::RParen)?;
-                Some(fl::Expr::Add(Box::new(lhs), Box::new(rhs)))
-            }
-            TokenKind::Sub => {
-                self.advance()?;
-                self.expect(TokenKind::LParen)?;
-                let lhs = self.parse_expr()?;
-                self.expect(TokenKind::Comma)?;
-                let rhs = self.parse_expr()?;
-                self.expect(TokenKind::RParen)?;
-                Some(fl::Expr::Sub(Box::new(lhs), Box::new(rhs)))
-            }
-            TokenKind::Mul => {
-                self.advance()?;
-                self.expect(TokenKind::LParen)?;
-                let lhs = self.parse_expr()?;
-                self.expect(TokenKind::Comma)?;
-                let rhs = self.parse_expr()?;
-                self.expect(TokenKind::RParen)?;
-                Some(fl::Expr::Mul(Box::new(lhs), Box::new(rhs)))
-            }
-            TokenKind::EqQ => {
-                self.advance()?;
-                self.expect(TokenKind::LParen)?;
-                let lhs = self.parse_expr()?;
-                self.expect(TokenKind::Comma)?;
-                let rhs = self.parse_expr()?;
-                self.expect(TokenKind::RParen)?;
-                Some(fl::Expr::Eq(Box::new(lhs), Box::new(rhs)))
-            }
-            TokenKind::LqQ => {
-                self.advance()?;
-                self.expect(TokenKind::LParen)?;
-                let lhs = self.parse_expr()?;
-                self.expect(TokenKind::Comma)?;
-                let rhs = self.parse_expr()?;
-                self.expect(TokenKind::RParen)?;
-                Some(fl::Expr::Lq(Box::new(lhs), Box::new(rhs)))
-            }
-            TokenKind::PairQ => {
-                self.advance()?;
-                self.expect(TokenKind::LParen)?;
-                let expr = self.parse_expr()?;
-                self.expect(TokenKind::RParen)?;
-                Some(fl::Expr::IsPair(Box::new(expr)))
-            }
-            TokenKind::If => {
-                self.advance()?;
-                let cond = self.parse_expr()?;
-                self.expect(TokenKind::Then)?;
-                let then = self.parse_expr()?;
-                self.expect(TokenKind::Else)?;
-                let els = self.parse_expr()?;
-                Some(fl::Expr::If(Box::new(cond), Box::new(then), Box::new(els)))
             }
             TokenKind::Cons => {
                 self.advance()?;
                 self.expect(TokenKind::LParen)?;
-                let lhs = self.parse_expr()?;
+                let head = self.parse_expr(0)?;
                 self.expect(TokenKind::Comma)?;
-                let rhs = self.parse_expr()?;
+                let tail = self.parse_expr(0)?;
                 self.expect(TokenKind::RParen)?;
-                Some(fl::Expr::Cons(Box::new(lhs), Box::new(rhs)))
+                fl::Expr::Cons(Box::new(head), Box::new(tail))
             }
             TokenKind::Car => {
                 self.advance()?;
                 self.expect(TokenKind::LParen)?;
-                let expr = self.parse_expr()?;
+                let expr = self.parse_expr(0)?;
                 self.expect(TokenKind::RParen)?;
-                Some(fl::Expr::Car(Box::new(expr)))
+                fl::Expr::Car(Box::new(expr))
             }
             TokenKind::Cdr => {
                 self.advance()?;
                 self.expect(TokenKind::LParen)?;
-                let expr = self.parse_expr()?;
+                let expr = self.parse_expr(0)?;
                 self.expect(TokenKind::RParen)?;
-                Some(fl::Expr::Cdr(Box::new(expr)))
+                fl::Expr::Cdr(Box::new(expr))
             }
-            TokenKind::LParen => {
+            TokenKind::PairQ => {
                 self.advance()?;
-                let expr = self.parse_expr()?;
+                self.expect(TokenKind::LParen)?;
+                let expr = self.parse_expr(0)?;
                 self.expect(TokenKind::RParen)?;
-                Some(expr)
+                fl::Expr::IsPair(Box::new(expr))
             }
-            _ => {
-                self.error(&format!("Expected expression, got {}", self.curr.kind));
-                None
+            TokenKind::If => {
+                self.advance()?;
+                let cond = self.parse_expr(0)?;
+                self.expect(TokenKind::Then)?;
+                let then = self.parse_expr(0)?;
+                self.expect(TokenKind::Else)?;
+                let els = self.parse_expr(0)?;
+                fl::Expr::If(Box::new(cond), Box::new(then), Box::new(els))
             }
+            t => {
+                self.error(&format!("Expected expression, got {}", t));
+                return None;
+            }
+        };
+
+        while !self.lexer.is_eof() && Self::is_infix_op(self.curr.kind) {
+            let op = self.curr.kind;
+            let (prec, assoc) = Self::infix_prec_assoc(op);
+            if prec < min_prec {
+                break;
+            }
+            self.advance()?;
+            let rhs = match assoc {
+                Assoc::Left => self.parse_expr(prec + 1)?,
+                Assoc::_Right => self.parse_expr(prec)?,
+            };
+            lhs = Self::make_infix(op, lhs, rhs);
+        }
+
+        Some(lhs)
+    }
+
+    fn is_infix_op(t: TokenKind) -> bool {
+        matches!(
+            t,
+            TokenKind::Add
+                | TokenKind::Sub
+                | TokenKind::Mul
+                | TokenKind::Eq
+                | TokenKind::Neq
+                | TokenKind::Lt
+                | TokenKind::Le
+                | TokenKind::Gt
+                | TokenKind::Ge
+        )
+    }
+
+    fn infix_prec_assoc(t: TokenKind) -> (u8, Assoc) {
+        match t {
+            TokenKind::Add | TokenKind::Sub => (1, Assoc::Left),
+            TokenKind::Mul => (2, Assoc::Left),
+            TokenKind::Eq
+            | TokenKind::Neq
+            | TokenKind::Lt
+            | TokenKind::Le
+            | TokenKind::Gt
+            | TokenKind::Ge => (3, Assoc::Left),
+            _ => unreachable!(),
+        }
+    }
+
+    fn make_infix(op: TokenKind, lhs: fl::Expr<'src>, rhs: fl::Expr<'src>) -> fl::Expr<'src> {
+        let l = Box::new(lhs);
+        let r = Box::new(rhs);
+        match op {
+            TokenKind::Add => fl::Expr::Add(l, r),
+            TokenKind::Sub => fl::Expr::Sub(l, r),
+            TokenKind::Mul => fl::Expr::Mul(l, r),
+            TokenKind::Eq => fl::Expr::Eq(l, r),
+            TokenKind::Neq => fl::Expr::Neq(l, r),
+            TokenKind::Lt => fl::Expr::Lt(l, r),
+            TokenKind::Le => fl::Expr::Le(l, r),
+            TokenKind::Gt => fl::Expr::Gt(l, r),
+            TokenKind::Ge => fl::Expr::Ge(l, r),
+            _ => unreachable!(),
         }
     }
 

@@ -228,13 +228,65 @@ impl<'src> ItoC<'src> {
                 );
                 tmp
             }
-            il::Expr::Lq(lhs, rhs) => {
+            il::Expr::Neq(lhs, rhs) => {
                 let tmp = gen_tmp!(self);
                 let lhs = self.convert_expr(defs, f, lhs);
                 let rhs = self.convert_expr(defs, f, rhs);
                 wl!(
                     self,
-                    "IC_VALUE {} = IC_lq({}, {});",
+                    "IC_VALUE {} = IC_neq({}, {});",
+                    fmt_tmp!(tmp),
+                    fmt_tmp!(lhs),
+                    fmt_tmp!(rhs)
+                );
+                tmp
+            }
+            il::Expr::Lt(lhs, rhs) => {
+                let tmp = gen_tmp!(self);
+                let lhs = self.convert_expr(defs, f, lhs);
+                let rhs = self.convert_expr(defs, f, rhs);
+                wl!(
+                    self,
+                    "IC_VALUE {} = IC_lt({}, {});",
+                    fmt_tmp!(tmp),
+                    fmt_tmp!(lhs),
+                    fmt_tmp!(rhs)
+                );
+                tmp
+            }
+            il::Expr::Le(lhs, rhs) => {
+                let tmp = gen_tmp!(self);
+                let lhs = self.convert_expr(defs, f, lhs);
+                let rhs = self.convert_expr(defs, f, rhs);
+                wl!(
+                    self,
+                    "IC_VALUE {} = IC_le({}, {});",
+                    fmt_tmp!(tmp),
+                    fmt_tmp!(lhs),
+                    fmt_tmp!(rhs)
+                );
+                tmp
+            }
+            il::Expr::Gt(lhs, rhs) => {
+                let tmp = gen_tmp!(self);
+                let lhs = self.convert_expr(defs, f, lhs);
+                let rhs = self.convert_expr(defs, f, rhs);
+                wl!(
+                    self,
+                    "IC_VALUE {} = IC_gt({}, {});",
+                    fmt_tmp!(tmp),
+                    fmt_tmp!(lhs),
+                    fmt_tmp!(rhs)
+                );
+                tmp
+            }
+            il::Expr::Ge(lhs, rhs) => {
+                let tmp = gen_tmp!(self);
+                let lhs = self.convert_expr(defs, f, lhs);
+                let rhs = self.convert_expr(defs, f, rhs);
+                wl!(
+                    self,
+                    "IC_VALUE {} = IC_ge({}, {});",
                     fmt_tmp!(tmp),
                     fmt_tmp!(lhs),
                     fmt_tmp!(rhs)
