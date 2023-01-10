@@ -4,6 +4,7 @@
 
 ### Typing progress
 
+- [X] Complete rewrite of the compiler because it is 💩 in master
 - [X] Static typing and typechecking
 - [X] Product types
 - [ ] Sum types
