@@ -1,6 +1,6 @@
-result = fib(30)
+result: int = fib(30)
 
-fib(n) =
+fib(n: int): int =
     if n < 2 then
         n
     else

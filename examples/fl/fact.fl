@@ -1,6 +1,6 @@
-result = fact(15)
+result: int = fact(15)
 
-fact(n) =
+fact(n: int): int =
     if n == 1 then
         1
     else

@@ -1,0 +1,26 @@
+struct Vec3
+    { x: int
+    , y: int
+    , z: int
+    }
+
+result: int =
+    addv3(ex1, ex2).y
+
+addv3(l: Vec3, r: Vec3): Vec3 =
+    Vec3 { x = l.x + r.x
+         , y = l.y + r.y
+         , z = l.z + r.z
+         }
+
+ex1: Vec3 =
+    Vec3 { x = 1
+         , y = 2
+         , z = 3
+         }
+
+ex2: Vec3 =
+    Vec3 { x = 4
+         , y = 5
+         , z = 6
+         }
