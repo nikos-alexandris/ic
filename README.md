@@ -8,6 +8,7 @@
 - [X] Product types
 - [ ] Sum types
 - [ ] Typeclasses
+- [ ] Runtime optimizations based on the type system
 
 ## Process
 
