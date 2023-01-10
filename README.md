@@ -1,6 +1,6 @@
 # The ic intensional compiler
 
-## ⚠️⚠️⚠️ This is the 'types' branch ⚠️⚠️⚠️
+## ⚠️⚠️⚠️ This is the 'types' branch (note that the build steps are slightly different) ⚠️⚠️⚠️
 
 ### Typing progress
 
