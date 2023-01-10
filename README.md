@@ -82,7 +82,7 @@ If the program is called `prog.fl`:
 
 ```bash
 cd /path/to/program
-$IC_HOME/compiler/target/release/ic prog.fl
+$IC_HOME/compiler/target/release/icc prog.fl
 ```
 
 Creates a `_build` subdirectory in the current directory with the generated executable `out` (and the generated C source code `out.c`)

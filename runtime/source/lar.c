@@ -1,4 +1,4 @@
-#include "value.h"
+#include "lar.h"
 
 #include <malloc.h>
 #include <time.h>
@@ -10,11 +10,6 @@ static IC_LAR_PROTO* IC_gc_first = NULL;
 
 static double IC_gc_time = 0;
 static usize IC_alloc_size = 0;
-
-#define IC_LAR_THUNK(_lar, _i) *(IC_LARF*)((u8*)(_lar) + sizeof(IC_LAR_PROTO) + _i * sizeof(IC_LARF))
-
-#define IC_LAR_VALUE(_lar, _i)                                                                                         \
-	*(IC_VALUE*)((u8*)(_lar) + sizeof(IC_LAR_PROTO) + _lar->num_of_args * sizeof(IC_LARF) + _i * sizeof(IC_VALUE))
 
 static void IC_gc(void);
 static void IC_mark(IC_LAR_PROTO* lar);
@@ -116,10 +111,10 @@ static void IC_mark(IC_LAR_PROTO* lar)
 			continue;
 		}
 		IC_VALUE val = IC_LAR_VALUE(lar, i);
-		if (val.tag != IC_VALUE_PAIR) {
+		if (IC_IS_INT(val)) {
 			continue;
 		}
-		IC_mark(val.as.pair);
+		IC_mark((IC_LAR_PROTO*)val);
 	}
 	IC_mark(lar->parent);
 }

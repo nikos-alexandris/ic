@@ -2,6 +2,7 @@
 #define IC_LAR_H
 
 #include "common.h"
+#include "value.h"
 
 typedef struct IC_lar_proto {
 	struct IC_lar_proto* parent;
@@ -11,7 +12,6 @@ typedef struct IC_lar_proto {
 	u8 marked;
 } IC_LAR_PROTO;
 
-typedef struct IC_value IC_VALUE;
 typedef IC_VALUE (*IC_LARF)(IC_LAR_PROTO*);
 
 #define IC_FUNCTION_PUSH(_lar) (_lar)->in_stack = 1

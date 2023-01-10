@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.23)
-project(library C)
+project(icr C)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_FLAGS "-Wall -Wextra -pedantic -Wno-unused-parameter")
 
-add_library(ic STATIC
+add_library(icr STATIC
         include/common.h
         include/lar.h
         include/value.h
@@ -13,4 +13,4 @@ add_library(ic STATIC
         source/lar.c
         source/value.c
         )
-target_include_directories(ic PRIVATE include)
+target_include_directories(icr PRIVATE include)

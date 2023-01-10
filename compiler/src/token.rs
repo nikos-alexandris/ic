@@ -16,19 +16,20 @@ impl<'src> Token<'src> {
 #[derive(PartialEq, Clone, Copy)]
 pub enum TokenKind<'src> {
     // Keywords
-    Cons,  // cons
-    Car,   // car
-    Cdr,   // cdr
-    PairQ, // pair?
-    If,    // if
-    Then,  // then
-    Else,  //else
+    If,     // if
+    Then,   // then
+    Else,   //else
+    Struct, // struct
 
     // Symbols
     LParen, // (
     RParen, // )
+    LBrace, // {
+    RBrace, // }
     Comma,  // ,
+    Dot,    // .
     Equals, // =
+    Colon,  // :
 
     // Infix Operators
     Add, // +
@@ -42,9 +43,14 @@ pub enum TokenKind<'src> {
     Ge,  // >=
 
     // Literals
-    Num(i64),        // [1-9][0-9]*
-    Var(&'src str),  // [a-zA-Z][a-zA-Z0-9]*
-    Atom(&'src str), // '[a-zA-Z][a-zA-Z0-9]*
+    Num(i64), // [1-9][0-9]*
+    True,
+    False,
+    Var(&'src str), // [a-zA-Z][a-zA-Z0-9]*
+
+    // Types
+    Int,  // int
+    Bool, // bool
 
     Eof,
 }
@@ -52,10 +58,6 @@ pub enum TokenKind<'src> {
 impl<'src> Display for TokenKind<'src> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            TokenKind::Car => write!(f, "'car'"),
-            TokenKind::Cdr => write!(f, "'cdr'"),
-            TokenKind::PairQ => write!(f, "'pair?'"),
-            TokenKind::Cons => write!(f, "':'"),
             TokenKind::Add => write!(f, "'+'"),
             TokenKind::Sub => write!(f, "'-'"),
             TokenKind::Mul => write!(f, "'*'"),
@@ -68,13 +70,21 @@ impl<'src> Display for TokenKind<'src> {
             TokenKind::If => write!(f, "'if'"),
             TokenKind::Then => write!(f, "'then'"),
             TokenKind::Else => write!(f, "'else'"),
+            TokenKind::Struct => write!(f, "'struct'"),
             TokenKind::LParen => write!(f, "'('"),
             TokenKind::RParen => write!(f, "')'"),
+            TokenKind::LBrace => write!(f, "'{{'"),
+            TokenKind::RBrace => write!(f, "'}}'"),
             TokenKind::Comma => write!(f, "','"),
+            TokenKind::Dot => write!(f, "'.'"),
             TokenKind::Equals => write!(f, "'='"),
+            TokenKind::Colon => write!(f, "':'"),
             TokenKind::Num(n) => write!(f, "{}", n),
+            TokenKind::True => write!(f, "'true'"),
+            TokenKind::False => write!(f, "'false'"),
             TokenKind::Var(v) => write!(f, "{}", v),
-            TokenKind::Atom(a) => write!(f, "'{}", a),
+            TokenKind::Int => write!(f, "'int'"),
+            TokenKind::Bool => write!(f, "'bool'"),
             TokenKind::Eof => write!(f, "EOF"),
         }
     }

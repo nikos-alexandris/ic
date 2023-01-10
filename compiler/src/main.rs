@@ -1,19 +1,20 @@
-#![feature(iter_intersperse)]
+#![feature(let_chains)]
 
 use std::env;
-use std::fs::read_to_string;
 use std::process::ExitCode;
 
-pub mod fl;
-mod ftoh;
-pub mod hir;
-mod htoi;
-pub mod il;
-pub mod itoc;
-pub mod lexer;
-pub mod loc;
-pub mod parser;
-pub mod token;
+mod fl;
+mod flchk;
+mod il;
+mod itoc;
+mod lexer;
+mod loc;
+mod parser;
+mod tc;
+mod tir;
+mod token;
+mod ttoi;
+mod ty;
 
 fn main() -> ExitCode {
     env::set_var("RUST_BACKTRACE", "1");
@@ -34,7 +35,7 @@ fn main() -> ExitCode {
         }
     };
 
-    let source = match read_to_string(&args[1]) {
+    let source = match std::fs::read_to_string(&args[1]) {
         Ok(source) => source,
         Err(e) => {
             eprintln!("Failed to read source file {}: {}", &args[1], e);
@@ -42,23 +43,21 @@ fn main() -> ExitCode {
         }
     };
 
-    let lexer = lexer::Lexer::new(&source);
-
-    let mut parser = parser::Parser::new(lexer);
-    let Some(fp) = parser.parse() else {
+    let Some(fp) = parser::parse(&source) else {
         return ExitCode::FAILURE;
     };
 
-    let ftoh = ftoh::FtoH::new(fp);
-    let Some(hir) = ftoh.convert() else {
+    let Ok(()) = flchk::check(&fp) else {
         return ExitCode::FAILURE;
     };
 
-    let htoi = htoi::HtoI::new(hir);
-    let il = htoi.convert();
+    let Some(tir) = tc::typecheck(fp) else {
+        return ExitCode::FAILURE;
+    };
 
-    let itoc = itoc::ItoC::new(il, ic_home);
-    itoc.generate();
+    let ip = ttoi::transform(tir);
+
+    itoc::generate(ip, ic_home);
 
     ExitCode::SUCCESS
 }

@@ -16,13 +16,14 @@ pub struct Lexer<'src> {
 pub const EOF_CHAR: char = '\0';
 
 static KEYWORDS: phf::Map<&'static str, TokenKind> = phf_map! {
-    "cons" => TokenKind::Cons,
-    "car" => TokenKind::Car,
-    "cdr" => TokenKind::Cdr,
-    "pair?" => TokenKind::PairQ,
     "if" => TokenKind::If,
     "then" => TokenKind::Then,
     "else" => TokenKind::Else,
+    "int" => TokenKind::Int,
+    "bool" => TokenKind::Bool,
+    "true" => TokenKind::True,
+    "false" => TokenKind::False,
+    "struct" => TokenKind::Struct,
 };
 
 impl<'src> Lexer<'src> {
@@ -46,12 +47,15 @@ impl<'src> Lexer<'src> {
         let c = self.first();
 
         match c {
-            '1'..='9' => Some(self.lex_num()),
+            '0'..='9' => Some(self.lex_num()),
             'a'..='z' | 'A'..='Z' => self.lex_alpha(),
-            '\'' => self.lex_atom(),
             '(' => Some(self.make_single(TokenKind::LParen)),
             ')' => Some(self.make_single(TokenKind::RParen)),
+            '{' => Some(self.make_single(TokenKind::LBrace)),
+            '}' => Some(self.make_single(TokenKind::RBrace)),
             ',' => Some(self.make_single(TokenKind::Comma)),
+            '.' => Some(self.make_single(TokenKind::Dot)),
+            ':' => Some(self.make_single(TokenKind::Colon)),
             '+' => Some(self.make_single(TokenKind::Add)),
             '-' => Some(self.make_single(TokenKind::Sub)),
             '*' => Some(self.make_single(TokenKind::Mul)),
@@ -140,28 +144,6 @@ impl<'src> Lexer<'src> {
                 Some(self.make_tok(TokenKind::Var(lexeme)))
             }
         }
-    }
-
-    fn lex_atom(&mut self) -> Option<Token<'src>> {
-        self.advance();
-
-        if self.is_eof() || !self.first().is_alphabetic() {
-            self.error("Expected alphabetic character after '");
-            return None;
-        }
-
-        let start = self.chars.clone();
-
-        self.advance();
-        let mut len = 1;
-        while !self.is_eof() && self.first().is_alphanumeric() {
-            len += 1;
-            self.advance();
-        }
-
-        let lexeme = &start.as_str()[..len];
-
-        Some(self.make_tok(TokenKind::Atom(lexeme)))
     }
 
     fn make_single(&mut self, kind: TokenKind<'src>) -> Token<'src> {
