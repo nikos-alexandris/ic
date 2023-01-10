@@ -1,5 +1,14 @@
 # The ic intensional compiler
 
+## ⚠️⚠️⚠️ This is the 'types' branch ⚠️⚠️⚠️
+
+### Typing progress
+
+- [X] Static typing and typechecking
+- [X] Product types
+- [ ] Sum types
+- [ ] Typeclasses
+
 ## Process
 
 The process of compilation is:
@@ -17,15 +26,14 @@ The process of compilation is:
 - [X] Parse functional programs as shown in `prog.fl`
 - [X] Peform error checking on the functional program (undefined variables, wrong argument arities, definition of nullary variable `result`, etc.)
 - [X] Handle function local arguments in the functional source program
-- [X] Transform the functional program to a high level intermediate representation
-- [X] Transform the HIR to the equivalent intensional program
+- [X] Transform the functional program to a typed intermediate representation
+- [X] Transform the typed program to the equivalent intensional program
 - [X] Compile the intensional program to C
-- [X] Don't require the user to compile and link the generated code; do it automatically
-- [ ] Compiler code is 💩 needs cleanup/simplification
+- [X] Compile and link the generated C program with the runtime library
 
 ### Runtime
 
-- [X] LARs (Only heap allocated, will change if types are added to the language)
+- [X] LARs (Only heap allocated, will change when strictness analysis is added)
 - [X] Garbage Collection (Currently mark and sweep - pretty slow should be improved)
 
 ## Dependencies
@@ -62,7 +70,7 @@ cd $IC_HOME/compiler
 cargo build --release
 ```
 
-Leaves the executable `ic` in `$IC_HOME/compiler/target/release/ic`
+Leaves the executable `icc` in `$IC_HOME/compiler/target/release/icc`
 
 ### Step 4: Building the runtime library
 
@@ -74,7 +82,7 @@ cmake -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ..
 make -j $(nproc)
 ```
 
-Leaves the static library `libic.a` in `$IC_HOME/runtime/lib/libic.a`
+Leaves the static library `libicr.a` in `$IC_HOME/runtime/lib/libicr.a`
 
 ### Step 5: Compiling the program
 
