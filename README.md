@@ -1,5 +1,7 @@
 # The ic intensional compiler
 
+## This is the master branch. The latest branch is the `types` branch which contains a rewrite of the compiler and runtime to support types  
+
 ## Process
 
 The process of compilation is:
