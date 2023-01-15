@@ -1,4 +1,4 @@
-# The ic intensional compiler
+# The ic intensional compiler for pure lazy functional programming languages
 
 ## This is the master branch. The latest (development) branch is the `types` branch which features a rewrite of the compiler and runtime to support types and a codebase that has been refactored to be much cleaner and more modular
 
